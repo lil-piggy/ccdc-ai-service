@@ -1,0 +1,2933 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <title>CCDC 智能金融助手 · 中债发行AI大脑</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #020617;
+            --sidebar-bg: #0a0e27;
+            --chat-bg: #020617;
+            --input-bg: #0f1525;
+            --accent-color: #00e5ff;
+            --accent-glow: rgba(0, 229, 255, 0.35);
+            --accent-secondary: #7c4dff;
+            --text-main: #e0f7fa;
+            --text-sub: #90a4ae;
+            --user-msg-bg: linear-gradient(135deg, #2979ff, #00e5ff);
+            --ai-msg-bg: #0a0e27;
+            --border-color: rgba(0, 229, 255, 0.12);
+            --success: #00e676;
+            --danger: #ff5252;
+            --font-tech: 'Orbitron', 'Segoe UI', sans-serif;
+            --font-mono: 'Share Tech Mono', 'Consolas', monospace;
+        }
+
+        /* ===== 全局背景与特效 ===== */
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            opacity: 0.4;
+            animation: scanline 8s linear infinite;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        @keyframes scanline {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100vw); }
+        }
+
+        /* ===== 侧边栏 ===== */
+        .sidebar {
+            width: 300px;
+            background: linear-gradient(180deg, var(--sidebar-bg) 0%, #060a1a 100%);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+        }
+        .brand-section {
+            padding: 20px 15px 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .brand-section::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 10%; right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+        .brand-logo {
+            width: 140px;
+            height: auto;
+            transition: 0.3s;
+            border-radius: 8px;
+            padding: 8px;
+            background: rgba(255,255,255,0.06);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .brand-logo:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 30px rgba(0,0,0,0.3), 0 0 15px rgba(0,229,255,0.1);
+        }
+        body.theme-light .brand-logo {
+            background: rgba(0,0,0,0.03);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .brand-tagline {
+            font-family: var(--font-tech);
+            font-size: 11px;
+            color: var(--accent-color);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0,229,255,0.3);
+            margin-top: 4px;
+        }
+        .system-status-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-sub);
+            background: rgba(0,229,255,0.03);
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+        .sys-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .sys-dot {
+            width: 6px; height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 6px var(--success);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.85); }
+        }
+
+        .sidebar-header {
+            padding: 14px 18px 10px;
+            font-family: var(--font-tech);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent-color);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .new-chat-btn {
+            width: 85%;
+            margin: 10px auto 6px;
+            padding: 12px;
+            background: transparent;
+            border: 1px dashed var(--accent-color);
+            border-radius: 6px;
+            color: var(--accent-color);
+            cursor: pointer;
+            font-family: var(--font-tech);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .new-chat-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,229,255,0.1), transparent);
+            transition: 0.5s;
+        }
+        .new-chat-btn:hover::before {
+            left: 100%;
+        }
+        .new-chat-btn:hover {
+            background: var(--accent-glow);
+            color: white;
+            border-style: solid;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+        .config-btn {
+            width: 85%;
+            margin: 0 auto 6px;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-sub);
+            cursor: pointer;
+            font-family: var(--font-tech);
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            transition: 0.3s;
+        }
+        .config-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(0,229,255,0.15);
+        }
+
+        /* 快捷模板 */
+        .template-section {
+            padding: 0 15px 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .template-title {
+            font-family: var(--font-tech);
+            font-size: 10px;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .template-list { display: flex; flex-wrap: wrap; gap: 6px; }
+
+        /* ===== 可折叠面板 ===== */
+        .foldable-panel { border-bottom: 1px solid var(--border-color); transition: all 0.3s; }
+        .foldable-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.2s;
+        }
+        .foldable-header:hover { background: rgba(0,229,255,0.03); }
+        .foldable-title {
+            font-family: var(--font-tech);
+            font-size: 10px;
+            color: var(--text-sub);
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .foldable-arrow {
+            font-size: 10px;
+            color: var(--accent-color);
+            transition: transform 0.3s;
+            display: inline-block;
+        }
+        .foldable-panel.collapsed .foldable-arrow { transform: rotate(-90deg); }
+        .foldable-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+            max-height: 500px;
+            opacity: 1;
+            padding: 0 15px 10px;
+        }
+        .foldable-panel.collapsed .foldable-content {
+            max-height: 0;
+            opacity: 0;
+            padding: 0 15px;
+        }
+        /* ===== 全局美化增强 ===== */
+        /* 按钮精致化 */
+        .new-chat-btn, .config-btn, .template-btn, .export-btn, .modal-btn, .table-viz-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .new-chat-btn::after, .config-btn::after, .template-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 0; height: 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s, height 0.4s;
+        }
+        .new-chat-btn:active::after, .config-btn:active::after, .template-btn:active::after {
+            width: 200px; height: 200px;
+        }
+
+        /* 消息气泡增强 */
+        .user .bubble {
+            position: relative;
+            overflow: hidden;
+        }
+        .user .bubble::after {
+            content: '';
+            position: absolute;
+            top: -50%; right: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 60%);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .ai .bubble {
+            position: relative;
+            overflow: hidden;
+        }
+        .ai .bubble::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,229,255,0.3), transparent);
+            pointer-events: none;
+        }
+
+        /* 历史项卡片化 */
+        .history-item {
+            border-radius: 8px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid transparent;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .history-item:hover {
+            transform: translateX(3px);
+        }
+        .history-item.active {
+            background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(124,77,255,0.04));
+        }
+
+        /* 市场数据卡片化 */
+        .market-item {
+            background: linear-gradient(145deg, rgba(0,229,255,0.04), rgba(124,77,255,0.02));
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .market-item:hover {
+            border-color: rgba(0,229,255,0.3);
+            box-shadow: 0 2px 10px rgba(0,229,255,0.06);
+            transform: translateY(-1px);
+        }
+
+        /* 输入框发光聚焦 */
+        .input-wrapper:focus-within {
+            box-shadow: 0 0 0 2px rgba(0,229,255,0.15), 0 0 30px rgba(0,229,255,0.08), inset 0 1px 0 rgba(0,229,255,0.05);
+        }
+
+        /* 模态框顶部光带动画 */
+        .modal::before {
+            animation: modalGlow 3s ease-in-out infinite alternate;
+        }
+        @keyframes modalGlow {
+            from { opacity: 0.6; }
+            to { opacity: 1; }
+        }
+
+        /* 打字光标更精致 */
+        .typing span {
+            box-shadow: 0 0 8px var(--accent-color);
+        }
+
+        /* 数据卡片玻璃态 */
+        .data-card {
+            background: linear-gradient(135deg, rgba(0,229,255,0.05), rgba(124,77,255,0.03));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,229,255,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .data-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            opacity: 0.5;
+        }
+
+        /* 思考框美化 */
+        .think-box {
+            background: linear-gradient(135deg, rgba(0,229,255,0.04), rgba(124,77,255,0.02));
+            border-radius: 8px;
+            border-left: 2px solid var(--accent-secondary);
+        }
+
+        /* 滚动条精致化 */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.12); border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,229,255,0.35); }
+
+        /* 选中文字颜色 */
+        ::selection {
+            background: rgba(0,229,255,0.25);
+            color: var(--text-main);
+        }
+        .template-btn {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-sub);
+            font-size: 11px;
+            padding: 5px 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: var(--font-tech);
+        }
+        .template-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(0,229,255,0.08);
+            box-shadow: 0 0 8px rgba(0,229,255,0.1);
+        }
+
+        .history-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .clear-data-btn {
+            width: 85%;
+            margin: 8px auto;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid rgba(255,82,82,0.4);
+            border-radius: 6px;
+            color: var(--danger);
+            cursor: pointer;
+            font-family: var(--font-tech);
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            transition: 0.3s;
+        }
+        .clear-data-btn:hover {
+            background: rgba(255, 82, 82, 0.1);
+            box-shadow: 0 0 10px rgba(255,82,82,0.15);
+        }
+
+        .history-item {
+            position: relative;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-sub);
+            font-size: 13px;
+            transition: 0.2s;
+            border: 1px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-item:hover {
+            background: rgba(0,229,255,0.05);
+            color: var(--text-main);
+            border-color: rgba(0,229,255,0.2);
+            box-shadow: 0 0 12px rgba(0,229,255,0.08);
+        }
+        .history-item.active {
+            background: rgba(0,229,255,0.08);
+            color: var(--text-main);
+            border: 1px solid var(--accent-color);
+            box-shadow: 0 0 15px rgba(0,229,255,0.12), inset 0 0 10px rgba(0,229,255,0.03);
+        }
+        .history-item.pinned {
+            border-left: 3px solid var(--accent-color);
+            background: rgba(0,229,255,0.04);
+        }
+        .history-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 10px; }
+        .item-actions { display: none; gap: 8px; align-items: center; }
+        .history-item:hover .item-actions { display: flex; }
+        .action-btn { background: none; border: none; color: var(--text-sub); cursor: pointer; padding: 2px; transition: 0.2s; display: flex; align-items: center; }
+        .action-btn:hover { color: var(--accent-color); transform: scale(1.2); filter: drop-shadow(0 0 4px var(--accent-color)); }
+        .action-btn.del:hover { color: var(--danger); filter: drop-shadow(0 0 4px var(--danger)); }
+
+        /* ===== 主区域 ===== */
+        .main-area { flex: 1; display: flex; flex-direction: column; background-color: var(--chat-bg); position: relative; z-index: 1; }
+        .chat-header {
+            padding: 12px 25px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 14, 39, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 10;
+            position: relative;
+        }
+        .chat-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            opacity: 0.5;
+        }
+        .model-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--success);
+            font-family: var(--font-mono);
+            font-weight: 500;
+        }
+        .status-dot {
+            width: 10px; height: 10px;
+            background-color: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--success), 0 0 20px rgba(0,230,118,0.3);
+            animation: pulse-ring 2s infinite;
+            position: relative;
+        }
+        .status-dot::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,230,118,0.3);
+            animation: pulse-ring-outer 2s infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.9); }
+        }
+        @keyframes pulse-ring-outer {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+        .model-switch {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 4px 8px;
+            outline: none;
+            cursor: pointer;
+        }
+        .model-switch:focus { border-color: var(--accent-color); }
+
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+        .header-clock {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--accent-color);
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px rgba(0,229,255,0.3);
+        }
+        .export-wrap { position: relative; }
+        .export-btn {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-sub);
+            font-family: var(--font-tech);
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            padding: 6px 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .export-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(0,229,255,0.15);
+        }
+        .export-dropdown {
+            position: absolute;
+            top: 110%; right: 0;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 20px rgba(0,229,255,0.05);
+            display: none;
+            min-width: 160px;
+            z-index: 20;
+            overflow: hidden;
+        }
+        .export-dropdown.active { display: block; }
+        .export-dropdown div {
+            padding: 10px 14px;
+            font-size: 12px;
+            color: var(--text-sub);
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: var(--font-tech);
+        }
+        .export-dropdown div:hover {
+            background: rgba(0,229,255,0.08);
+            color: var(--text-main);
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 15% 120px 15%;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            max-width: 85%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            animation: msgAppear 0.4s ease-out;
+        }
+        @keyframes msgAppear {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user { align-self: flex-end; align-items: flex-end; }
+        .message.ai { align-self: flex-start; }
+
+        /* AI 头像徽章 */
+        .ai-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-tech);
+            font-size: 14px;
+            color: var(--bg-color);
+            margin-bottom: 6px;
+            box-shadow: 0 0 12px rgba(0,229,255,0.3);
+            border: 2px solid rgba(0,229,255,0.3);
+        }
+
+        .bubble {
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 15px;
+            line-height: 1.7;
+            word-wrap: break-word;
+            position: relative;
+        }
+        .user .bubble {
+            background: var(--user-msg-bg);
+            color: white;
+            border-bottom-right-radius: 2px;
+            box-shadow: 0 4px 20px rgba(41,121,255,0.25), 0 0 30px rgba(0,229,255,0.08);
+            border: 1px solid rgba(0,229,255,0.15);
+        }
+        .ai .bubble {
+            background: linear-gradient(145deg, #0a0e27, #0f1525);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 2px;
+            min-width: 100px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(0,229,255,0.05);
+        }
+        .ai .bubble::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 3px; height: 100%;
+            background: linear-gradient(180deg, var(--accent-color), var(--accent-secondary));
+            border-radius: 12px 0 0 12px;
+            opacity: 0.7;
+        }
+
+        .think-box {
+            background: rgba(0,229,255,0.03);
+            border-left: 2px solid var(--accent-secondary);
+            border-radius: 6px;
+            margin-bottom: 15px;
+            padding: 10px 12px;
+            font-size: 13px;
+            color: var(--text-sub);
+            transition: 0.3s;
+            font-family: var(--font-mono);
+        }
+        .think-box summary {
+            cursor: pointer;
+            font-weight: 500;
+            outline: none;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-tech);
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .think-box summary:hover { color: var(--accent-color); }
+        .think-content {
+            margin-top: 10px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 10px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: #80deea;
+        }
+        .think-status-text { animation: blink-cursor 1.2s infinite; color: var(--accent-color); }
+        @keyframes blink-cursor {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; text-shadow: 0 0 8px var(--accent-color); }
+        }
+
+        .status-info {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-sub);
+            margin-top: 6px;
+            display: flex;
+            gap: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .data-card {
+            background: linear-gradient(145deg, #0a1020, #0f1a30);
+            border: 1px solid rgba(0,229,255,0.2);
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3), 0 0 20px rgba(0,229,255,0.05);
+        }
+        .data-card h4 {
+            margin: 0 0 8px 0;
+            color: var(--accent-color);
+            font-size: 13px;
+            font-family: var(--font-tech);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            letter-spacing: 0.5px;
+        }
+        .data-card code {
+            font-family: var(--font-mono);
+            color: #69f0ae;
+            font-size: 12px;
+            background: #020617;
+            padding: 2px 5px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,229,255,0.1);
+        }
+
+        /* Markdown 表格 */
+        .md-table-wrapper { margin: 12px 0; overflow-x: auto; }
+        .md-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            font-family: var(--font-mono);
+        }
+        .md-table th, .md-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .md-table th {
+            background: rgba(0,229,255,0.1);
+            color: var(--accent-color);
+            font-weight: 600;
+            font-family: var(--font-tech);
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .md-table tr:nth-child(even) { background: rgba(0,229,255,0.02); }
+        .table-viz-btn {
+            margin-top: 8px;
+            background: transparent;
+            border: 1px dashed var(--accent-color);
+            color: var(--accent-color);
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: var(--font-tech);
+            transition: 0.2s;
+        }
+        .table-viz-btn:hover {
+            background: rgba(0,229,255,0.1);
+            box-shadow: 0 0 10px rgba(0,229,255,0.1);
+        }
+
+        /* ===== 输入区域 ===== */
+        .input-area {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 20px 15%;
+            background: linear-gradient(to top, var(--bg-color) 70%, transparent);
+            z-index: 5;
+        }
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: 0.3s;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(0,229,255,0.03);
+            align-items: center;
+            position: relative;
+        }
+        .input-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -1px; left: 10%; right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            opacity: 0;
+            transition: 0.3s;
+        }
+        .input-wrapper:focus-within {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(0,229,255,0.15), 0 0 25px rgba(0,229,255,0.1);
+        }
+        .input-wrapper:focus-within::before { opacity: 0.6; }
+
+        .mode-selector {
+            display: flex;
+            align-items: center;
+            padding-right: 10px;
+            border-right: 1px solid var(--border-color);
+        }
+        .mode-select {
+            background: transparent;
+            color: var(--text-main);
+            border: none;
+            font-family: var(--font-tech);
+            font-size: 11px;
+            cursor: pointer;
+            outline: none;
+            letter-spacing: 0.5px;
+        }
+
+        textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            padding: 10px 5px;
+            resize: none;
+            outline: none;
+            height: 24px;
+            font-size: 15px;
+            line-height: 24px;
+            max-height: 200px;
+            font-family: inherit;
+        }
+
+        .upload-btn {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .upload-btn:hover {
+            color: var(--accent-color);
+            background: rgba(0,229,255,0.08);
+            box-shadow: 0 0 8px rgba(0,229,255,0.1);
+        }
+        .send-btn {
+            background: linear-gradient(135deg, var(--accent-color), #2979ff);
+            border: none;
+            border-radius: 8px;
+            width: 40px; height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-color);
+            transition: 0.2s;
+            align-self: flex-end;
+            box-shadow: 0 0 15px rgba(0,229,255,0.3);
+        }
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0,229,255,0.5);
+        }
+        .send-btn:disabled {
+            background: #1a2035;
+            color: #4a5568;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .typing { display: flex; gap: 4px; padding: 5px 0; }
+        .typing span {
+            width: 6px; height: 6px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+            box-shadow: 0 0 6px var(--accent-color);
+        }
+        .typing span:nth-child(1) { animation-delay: -0.32s; }
+        .typing span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.15); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,229,255,0.3); }
+
+        /* ===== 配置弹窗 ===== */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(2,6,23,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: linear-gradient(145deg, #0a0e27, #0f1525);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 520px;
+            max-width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(0,229,255,0.08);
+            position: relative;
+        }
+        .modal::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-secondary), var(--accent-color));
+            border-radius: 12px 12px 0 0;
+        }
+        .modal h3 {
+            margin: 0 0 16px 0;
+            color: var(--accent-color);
+            font-size: 16px;
+            font-family: var(--font-tech);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+            font-family: var(--font-tech);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+            font-family: var(--font-mono);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(0,229,255,0.1);
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            border: none;
+            transition: 0.2s;
+            font-family: var(--font-tech);
+            letter-spacing: 0.5px;
+        }
+        .modal-btn.primary {
+            background: linear-gradient(135deg, var(--accent-color), #2979ff);
+            color: var(--bg-color);
+            font-weight: 600;
+        }
+        .modal-btn.primary:hover {
+            box-shadow: 0 0 15px rgba(0,229,255,0.3);
+        }
+        .modal-btn.secondary {
+            background: transparent;
+            color: var(--text-sub);
+            border: 1px solid var(--border-color);
+        }
+        .modal-btn.secondary:hover {
+            color: var(--text-main);
+            border-color: var(--accent-color);
+        }
+        .hint { font-size: 11px; color: var(--text-sub); margin-top: 4px; font-family: var(--font-mono); }
+        .hint.warning { color: var(--danger); }
+
+        .model-list {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .model-item {
+            display: flex;
+            gap: 8px;
+            padding: 8px;
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+        }
+        .model-item:last-child { border-bottom: none; }
+        .model-item input {
+            flex: 1;
+            padding: 6px 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-main);
+            font-size: 13px;
+            font-family: var(--font-mono);
+        }
+        .model-item .del-model {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* ===== 图表弹窗 ===== */
+        .chart-overlay {
+            position: fixed; inset: 0;
+            background: rgba(2,6,23,0.9);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .chart-overlay.active { display: flex; }
+        .chart-box {
+            background: linear-gradient(145deg, #0a0e27, #0f1525);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 800px;
+            max-width: 95%;
+            height: 500px;
+            max-height: 80vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(0,229,255,0.06);
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .chart-header h4 {
+            margin: 0;
+            color: var(--accent-color);
+            font-family: var(--font-tech);
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        .chart-close {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            font-size: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .chart-close:hover { color: var(--danger); text-shadow: 0 0 8px var(--danger); }
+        #chartContainer { flex: 1; min-height: 0; }
+        .chart-type-btns { display: flex; gap: 8px; margin-bottom: 10px; }
+        .chart-type-btns button {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-sub);
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: var(--font-tech);
+            transition: 0.2s;
+        }
+        .chart-type-btns button.active {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(0,229,255,0.1);
+            box-shadow: 0 0 8px rgba(0,229,255,0.1);
+        }
+
+        /* ===== 打印 ===== */
+        /* ===== 主题切换 ===== */
+        body.theme-light {
+            --bg-color: #eef1f5;
+            --sidebar-bg: #ffffff;
+            --chat-bg: #eef1f5;
+            --input-bg: #ffffff;
+            --accent-color: #1565c0;
+            --accent-glow: rgba(21, 101, 192, 0.25);
+            --accent-secondary: #7c4dff;
+            --text-main: #1a1a2e;
+            --text-sub: #4a5568;
+            --border-color: rgba(21, 101, 192, 0.2);
+            --success: #2e7d32;
+            --danger: #c62828;
+        }
+        body.theme-light .sidebar {
+            background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%);
+            box-shadow: 4px 0 20px rgba(0,0,0,0.08);
+        }
+        body.theme-light .foldable-title,
+        body.theme-light .template-title,
+        body.theme-light .market-name,
+        body.theme-light .kb-title {
+            color: #374151;
+            font-weight: 700;
+        }
+        body.theme-light .foldable-header:hover {
+            background: rgba(21, 101, 192, 0.06);
+        }
+        body.theme-light .history-item {
+            color: #4b5563;
+            border-color: rgba(21, 101, 192, 0.1);
+        }
+        body.theme-light .history-item:hover {
+            background: rgba(21, 101, 192, 0.08);
+            color: #1a1a2e;
+            border-color: rgba(21, 101, 192, 0.25);
+        }
+        body.theme-light .history-item.active {
+            background: rgba(21, 101, 192, 0.1);
+            border-color: var(--accent-color);
+            color: #1a1a2e;
+        }
+        body.theme-light .brand-tagline {
+            color: #1565c0;
+            text-shadow: none;
+        }
+        body.theme-light .system-status-bar {
+            background: rgba(21, 101, 192, 0.05);
+        }
+        body.theme-light .sidebar-header {
+            color: #1565c0;
+        }
+        body.theme-light .config-btn {
+            color: #4a5568;
+            border-color: rgba(21, 101, 192, 0.2);
+        }
+        body.theme-light .config-btn:hover {
+            color: #1565c0;
+            border-color: #1565c0;
+        }
+        body.theme-light .kb-toggle {
+            color: #374151;
+        }
+        body.theme-light .clear-data-btn {
+            color: #c62828;
+            border-color: rgba(198, 40, 40, 0.3);
+        }
+        body.theme-light .history-item {
+            color: #374151;
+            background: rgba(0,0,0,0.02);
+        }
+        body.theme-light .history-item:hover {
+            background: rgba(21, 101, 192, 0.08);
+            color: #1a1a2e;
+        }
+        body.theme-light .history-item.active {
+            background: rgba(21, 101, 192, 0.12);
+            color: #0d47a1;
+        }
+        body.theme-light ::-webkit-scrollbar-thumb {
+            background: rgba(21, 101, 192, 0.2);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        body.theme-light ::-webkit-scrollbar-thumb:hover {
+            background: rgba(21, 101, 192, 0.4);
+        }
+        body.theme-light::before {
+            background-image: none;
+        }
+        body.theme-light .ai .bubble {
+            background: #ffffff;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        body.theme-light .user .bubble {
+            background: linear-gradient(135deg, #1565c0, #42a5f5);
+        }
+        body.theme-cyber {
+            --bg-color: #0a0014;
+            --sidebar-bg: #120024;
+            --chat-bg: #0a0014;
+            --input-bg: #1a0033;
+            --accent-color: #ff00ff;
+            --accent-glow: rgba(255, 0, 255, 0.35);
+            --accent-secondary: #00ffff;
+            --text-main: #ffe0ff;
+            --text-sub: #b0a0c0;
+            --border-color: rgba(255, 0, 255, 0.2);
+            --success: #00ff88;
+            --danger: #ff3366;
+        }
+        body.theme-cyber::before {
+            background-image:
+                linear-gradient(rgba(255,0,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,255,0.04) 1px, transparent 1px);
+        }
+        body.theme-cyber::after {
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+        .theme-switcher {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-tech);
+            font-size: 10px;
+            color: var(--text-sub);
+            transition: 0.2s;
+        }
+        .theme-switcher:hover { border-color: var(--accent-color); color: var(--accent-color); }
+
+        /* ===== 统计面板 ===== */
+        .stats-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.85); backdrop-filter: blur(8px); z-index: 1500; display: none; align-items: center; justify-content: center; }
+        .stats-overlay.active { display: flex; }
+        .stats-box { background: linear-gradient(145deg, #0a0e27, #0f1525); border: 1px solid var(--border-color); border-radius: 12px; width: 520px; max-width: 90%; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); position: relative; }
+        .stats-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent-color), var(--accent-secondary), var(--accent-color)); border-radius: 12px 12px 0 0; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+        .stat-card { background: rgba(0,229,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; text-align: center; }
+        .stat-value { font-family: var(--font-tech); font-size: 24px; color: var(--accent-color); text-shadow: 0 0 10px rgba(0,229,255,0.2); }
+        .stat-label { font-family: var(--font-tech); font-size: 10px; color: var(--text-sub); margin-top: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+        /* ===== 市场数据面板 ===== */
+        .market-panel { padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
+        .market-title { font-family: var(--font-tech); font-size: 10px; color: var(--accent-color); letter-spacing: 1.5px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .market-item { background: rgba(0,229,255,0.03); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 8px; }
+        .market-name { font-size: 9px; color: var(--text-sub); font-family: var(--font-tech); }
+        .market-value { font-size: 13px; color: var(--text-main); font-family: var(--font-mono); }
+        .market-change { font-size: 10px; font-family: var(--font-mono); }
+        .market-up { color: var(--danger); }
+        .market-down { color: var(--success); }
+
+        /* ===== 角色定制 ===== */
+        .persona-list { border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 10px; max-height: 200px; overflow-y: auto; }
+        .persona-item { padding: 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: 0.2s; }
+        .persona-item:last-child { border-bottom: none; }
+        .persona-item:hover { background: rgba(0,229,255,0.05); }
+        .persona-item.active { background: rgba(0,229,255,0.08); border-left: 3px solid var(--accent-color); }
+        .persona-name { font-family: var(--font-tech); font-size: 12px; color: var(--text-main); }
+        .persona-desc { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+
+        /* ===== 多模型对比 ===== */
+        .compare-layout { display: flex; gap: 12px; width: 100%; }
+        .compare-col { flex: 1; min-width: 0; }
+        .compare-header { font-family: var(--font-tech); font-size: 11px; color: var(--accent-color); padding: 8px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px; letter-spacing: 1px; }
+
+        /* ===== 知识库 ===== */
+        .kb-section { padding: 0 15px 10px; border-bottom: 1px solid var(--border-color); }
+        .kb-title { font-family: var(--font-tech); font-size: 10px; color: var(--text-sub); margin-bottom: 8px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
+        .kb-list { max-height: 120px; overflow-y: auto; margin-bottom: 8px; }
+        .kb-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 8px; background: rgba(0,229,255,0.03); border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 4px; font-size: 11px; color: var(--text-sub); }
+        .kb-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .kb-item-del { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 12px; padding: 0 4px; }
+        .kb-toggle { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 11px; color: var(--text-sub); cursor: pointer; }
+        .kb-toggle input { accent-color: var(--accent-color); }
+
+        @media print {
+            .sidebar, .input-area, .chat-header .header-actions, .status-info,
+            body::before, body::after, .brand-section, .ai-avatar { display: none !important; }
+            .main-area { padding: 20px; }
+            .messages-container { padding: 0; overflow: visible; }
+            body { height: auto; overflow: visible; background: white; color: #333; }
+            .bubble { box-shadow: none; border: 1px solid #ccc; background: white !important; color: #333 !important; }
+            .ai .bubble::before { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand-section">
+            <img src="data:image/png;base64,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" alt="CCDC Logo" class="brand-logo" onerror="this.style.display='none'">
+            <div class="brand-tagline">智能金融助手 · 中债发行AI大脑</div>
+            <div class="system-status-bar">
+                <div class="sys-indicator"><span class="sys-dot"></span>SYSTEM ONLINE</div>
+                <span id="sysClock">00:00:00</span>
+            </div>
+        </div>
+        <button class="new-chat-btn" onclick="startNewChat()">+ 开启新分析会话</button>
+        <button class="config-btn" onclick="openConfigModal()">⚙️ API 配置</button>
+        
+        <div class="foldable-panel" id="panel-templates">
+            <div class="foldable-header" onclick="toggleFold('panel-templates')">
+                <div class="foldable-title">📋 快捷模板</div>
+                <span class="foldable-arrow">▼</span>
+            </div>
+            <div class="foldable-content">
+                <div class="template-list">
+                    <button class="template-btn" onclick="applyTemplate('bond')">📊 债券定价</button>
+                    <button class="template-btn" onclick="applyTemplate('credit')">🔍 信用分析</button>
+                    <button class="template-btn" onclick="applyTemplate('prospectus')">📄 募集书解读</button>
+                    <button class="template-btn" onclick="applyTemplate('macro')">🌍 宏观点评</button>
+                    <button class="template-btn" onclick="applyTemplate('curve')">📈 收益率曲线</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实时市场数据面板 -->
+        <div class="foldable-panel collapsed" id="panel-market">
+            <div class="foldable-header" onclick="toggleFold('panel-market')">
+                <div class="foldable-title">📈 中债市场快讯 <span style="font-size:9px;color:var(--success);text-transform:none;letter-spacing:0;">● LIVE</span></div>
+                <span class="foldable-arrow">▼</span>
+            </div>
+            <div class="foldable-content">
+                <div class="market-grid" id="marketGrid">
+                    <div class="market-item"><div class="market-name">国债10Y</div><div class="market-value" id="m1">2.145%</div><div class="market-change market-down" id="c1">-1.2bp</div></div>
+                    <div class="market-item"><div class="market-name">国开10Y</div><div class="market-value" id="m2">2.235%</div><div class="market-change market-down" id="c2">-1.5bp</div></div>
+                    <div class="market-item"><div class="market-name">托管量</div><div class="market-value" id="m3">128.5万亿</div><div class="market-change market-up" id="c3">+0.8%</div></div>
+                    <div class="market-item"><div class="market-name">投资者</div><div class="market-value" id="m4">42,186户</div><div class="market-change market-up" id="c4">+123</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 知识库区域 -->
+        <div class="foldable-panel collapsed" id="panel-kb">
+            <div class="foldable-header" onclick="toggleFold('panel-kb')">
+                <div class="foldable-title">📚 知识库</div>
+                <span class="foldable-arrow">▼</span>
+            </div>
+            <div class="foldable-content">
+                <div class="kb-list" id="kbList"></div>
+                <button class="config-btn" onclick="document.getElementById('kbInput').click()">+ 添加文档</button>
+                <input type="file" id="kbInput" style="display:none" accept=".txt,.md,.csv,.json,.pdf" onchange="handleKbUpload(event)">
+                <label class="kb-toggle"><input type="checkbox" id="kbToggle" onchange="toggleKb()"> 启用知识库检索</label>
+            </div>
+        </div>
+        
+        <div class="history-list" id="historyList"></div>
+        <button class="clear-data-btn" onclick="clearAllData()">🗑️ 清空所有本地数据</button>
+    </aside>
+
+    <main class="main-area">
+        <header class="chat-header">
+            <div class="model-status">
+                <div class="status-dot"></div>
+                <span>模型:</span>
+                <select id="modelSwitch" class="model-switch" onchange="switchActiveModel(this.value)">
+                    <option value="0">默认模型</option>
+                </select>
+            </div>
+            <div class="header-actions">
+                <div class="header-clock" id="headerClock">00:00:00</div>
+                <button class="theme-switcher" onclick="cycleTheme()" title="切换主题">🎨 <span id="themeLabel">HUD</span></button>
+                <button class="theme-switcher" onclick="openStatsModal()" title="使用统计">📊 统计</button>
+                <div class="export-wrap">
+                    <button class="export-btn" onclick="toggleExportMenu(event)">📤 导出</button>
+                    <div class="export-dropdown" id="exportDropdown">
+                        <div onclick="exportMarkdown()">📝 导出 Markdown</div>
+                        <div onclick="exportWord()">📘 导出 Word</div>
+                        <div onclick="exportPrint()">🖨️ 打印 / PDF</div>
+                        <div onclick="exportBackup()">💾 备份数据</div>
+                        <div onclick="importBackupPrompt()">📥 恢复数据</div>
+                    </div>
+                </div>
+                <div style="font-size: 10px; color: var(--text-sub); letter-spacing: 2px; display: flex; align-items: center; font-family: var(--font-tech);">
+                    <span style="margin-right: 6px; color: var(--accent-color); text-shadow: 0 0 8px rgba(0,229,255,0.3);">◈</span> 实时金融大脑
+                </div>
+            </div>
+        </header>
+
+        <div class="messages-container" id="messagesContainer">
+            <div class="message ai">
+                <div class="ai-avatar">AI</div>
+                <div class="bubble">
+                    <div style="font-family: var(--font-tech); color: var(--accent-color); font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;">◈ CCDC 智能金融助手 · 系统已就绪</div>
+                    您好，我是 <b>AI智能机器人助手小发</b>，由中央结算公司赋能的智能金融分析终端。<br><br>
+                    请录入指令，我可以为您：<br>
+                    • 进行 <b>债券定价预测</b> 与市场基准分析<br>
+                    • 执行 <b>深度思考 (CoT)</b> 逻辑推理<br>
+                    • 检索 <b>政策语料库</b> 并生成解读报告<br>
+                    • <b>上传文件</b>（.txt / .csv / .md）进行智能解读
+                </div>
+                <div class="status-info"><span>System: Online</span><span>CCDC Neural Engine v3.0</span></div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-wrapper" id="dropZone">
+                <div class="mode-selector">
+                    <select id="modeSelect" class="mode-select">
+                        <option value="chat">💬 标准</option>
+                        <option value="think">🧠 思考</option>
+                        <option value="predict">📊 预测</option>
+                    </select>
+                </div>
+                <textarea id="userInput" placeholder="输入分析指令、粘贴文本或拖拽文件到此处..." rows="1" onkeydown="handleKeyDown(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onpaste="handlePaste(event)"></textarea>
+                <input type="file" id="fileInput" style="display:none" accept=".txt,.md,.csv,.json" onchange="handleFileSelect(event)">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()" title="上传文本文件">📎</button>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 配置弹窗 -->
+    <div class="modal-overlay" id="configModal">
+        <div class="modal">
+            <h3>⚙️ 个人配置</h3>
+            <div class="form-group">
+                <label>当前登录用户</label>
+                <div id="cfgUsername" style="font-family: var(--font-mono); color: var(--accent-color); font-size: 14px; padding: 10px 0;">-</div>
+            </div>
+            <div class="form-group">
+                <label>模型列表（至少保留一个）</label>
+                <div class="model-list" id="modelListBox"></div>
+                <button class="modal-btn secondary" onclick="addModelRow()" style="margin-top:6px;">+ 添加模型</button>
+            </div>
+            <div class="form-group">
+                <label>角色定制 (Persona)</label>
+                <div class="persona-list" id="personaListBox"></div>
+                <button class="modal-btn secondary" onclick="addPersonaRow()" style="margin-top:6px;">+ 添加角色</button>
+                <div class="hint">自定义系统提示词，保存后可快速切换不同分析角色</div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="logout()">退出登录</button>
+                <button class="modal-btn secondary" onclick="closeConfigModal()">取消</button>
+                <button class="modal-btn primary" onclick="saveConfig()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录/注册弹窗 -->
+    <div class="modal-overlay active" id="authModal">
+        <div class="modal" style="width: 380px;">
+            <h3>🔐 登录 / 注册</h3>
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" id="authUsername" placeholder="请输入用户名（至少3位）">
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="authPassword" placeholder="请输入密码（至少6位）">
+            </div>
+            <div class="hint warning" id="authError" style="display:none;margin-bottom:10px;"></div>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="handleRegister()">注册</button>
+                <button class="modal-btn primary" onclick="handleLogin()">登录</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 统计面板弹窗 -->
+    <div class="stats-overlay" id="statsOverlay" onclick="closeStatsModal(event)">
+        <div class="stats-box" onclick="event.stopPropagation()">
+            <div class="chart-header">
+                <h4>📊 使用统计</h4>
+                <button class="chart-close" onclick="closeStatsModal()">&times;</button>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-value" id="statSessions">0</div><div class="stat-label">总会话</div></div>
+                <div class="stat-card"><div class="stat-value" id="statMessages">0</div><div class="stat-label">总消息</div></div>
+                <div class="stat-card"><div class="stat-value" id="statTokens">0</div><div class="stat-label">估算 Tokens</div></div>
+                <div class="stat-card"><div class="stat-value" id="statTime">0h</div><div class="stat-label">活跃时长</div></div>
+            </div>
+            <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--border-color);">
+                <button class="modal-btn secondary" onclick="exportBackup()" style="margin-right:8px;">💾 备份数据</button>
+                <button class="modal-btn secondary" onclick="importBackupPrompt()">📥 恢复数据</button>
+                <button class="modal-btn primary" onclick="closeStatsModal()" style="float:right;">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图表弹窗 -->
+    <div class="chart-overlay" id="chartOverlay" onclick="closeChart(event)">
+        <div class="chart-box" onclick="event.stopPropagation()">
+            <div class="chart-header">
+                <h4>📊 数据可视化</h4>
+                <button class="chart-close" onclick="closeChart()">&times;</button>
+            </div>
+            <div class="chart-type-btns">
+                <button class="active" onclick="setChartType('bar', this)">柱状图</button>
+                <button onclick="setChartType('line', this)">折线图</button>
+                <button onclick="setChartType('pie', this)">饼图</button>
+            </div>
+            <div id="chartContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // ================= API 客户端 & 认证系统 =================
+        const API_BASE = '';
+        let authToken = localStorage.getItem('ccdc_auth_token') || '';
+        let reqUsername = localStorage.getItem('ccdc_username') || '';
+
+        async function api(path, options = {}) {
+            const url = API_BASE + path;
+            const opts = {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+                    ...(options.headers || {})
+                }
+            };
+            const res = await fetch(url, opts);
+            if (res.status === 401) {
+                logout();
+                throw new Error('登录已过期，请重新登录');
+            }
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ error: '请求失败' }));
+                throw new Error(err.error || `HTTP ${res.status}`);
+            }
+            return res.json().catch(() => ({}));
+        }
+
+        function logout() {
+            authToken = '';
+            reqUsername = '';
+            _configCache = null;
+            localStorage.removeItem('ccdc_auth_token');
+            localStorage.removeItem('ccdc_username');
+            showAuthModal();
+        }
+
+        async function login(username, password) {
+            const data = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) });
+            authToken = data.token;
+            reqUsername = data.username;
+            localStorage.setItem('ccdc_auth_token', authToken);
+            localStorage.setItem('ccdc_username', reqUsername);
+            hideAuthModal();
+            await initApp();
+        }
+
+        async function register(username, password) {
+            const data = await api('/api/auth/register', { method: 'POST', body: JSON.stringify({ username, password }) });
+            authToken = data.token;
+            reqUsername = data.username;
+            localStorage.setItem('ccdc_auth_token', authToken);
+            localStorage.setItem('ccdc_username', reqUsername);
+            hideAuthModal();
+            await initApp();
+        }
+
+        async function checkAuth() {
+            if (!authToken) return false;
+            try {
+                const user = await api('/api/auth/me');
+                reqUsername = user.username;
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
+        // ================= 安全工具函数 =================
+        function escapeHtml(unsafe) {
+            if (unsafe == null) return "";
+            return String(unsafe)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function renderMarkdown(text) {
+            if (!text) return "";
+            const lines = text.split('\n');
+            const result = [];
+            let i = 0;
+            while (i < lines.length) {
+                const line = lines[i];
+                if (line.trim().startsWith('|')) {
+                    const tableLines = [];
+                    while (i < lines.length && lines[i].trim().startsWith('|')) {
+                        tableLines.push(lines[i]);
+                        i++;
+                    }
+                    result.push(renderTable(tableLines));
+                } else {
+                    let processed = escapeHtml(line).replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+                    result.push(processed + '<br>');
+                    i++;
+                }
+            }
+            return result.join('');
+        }
+
+        function renderTable(lines) {
+            const dataLines = lines.filter(l => !/^[\|\s\-\:]+$/.test(l.trim()));
+            if (dataLines.length === 0) return '';
+            let html = '<div class="md-table-wrapper"><table class="md-table">';
+            dataLines.forEach((line, idx) => {
+                const cells = line.split('|').map(c => c.trim()).filter(c => c !== '');
+                const tag = idx === 0 ? 'th' : 'td';
+                html += '<tr>' + cells.map(c => `<${tag}>${escapeHtml(c).replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')}</${tag}>`).join('') + '</tr>';
+            });
+            html += '</table><button class="table-viz-btn" onclick="openChartFromTable(this)">📊 可视化</button></div>';
+            return html;
+        }
+
+        function setTextContent(el, text) { if (el) el.textContent = text; }
+        // ================================================
+
+        // ================= 配置管理 =================
+        const CONFIG_KEY = 'finChatApiConfig_v3';
+        const HISTORY_KEY = 'finChatApiHistory_v3';
+
+        let _configCache = null;
+        async function loadApiConfig() {
+            if (_configCache) return _configCache;
+            try {
+                const cfg = await api('/api/config');
+                _configCache = cfg;
+                return cfg;
+            } catch { return null; }
+        }
+        function getApiConfig() {
+            return _configCache;
+        }
+        async function setApiConfig(cfg) {
+            _configCache = cfg;
+            await api('/api/config', { method: 'POST', body: JSON.stringify(cfg) });
+        }
+
+        function getActiveModel(cfg) {
+            if (!cfg) cfg = getApiConfig();
+            if (!cfg) return null;
+            const idx = Math.min(cfg.activeModelIndex, cfg.models.length - 1);
+            return cfg.models[idx];
+        }
+
+        function switchActiveModel(index) {
+            const cfg = getApiConfig();
+            if (!cfg) return;
+            cfg.activeModelIndex = parseInt(index, 10) || 0;
+            setApiConfig(cfg);
+            updateModelSwitchUI();
+        }
+
+        function updateModelSwitchUI() {
+            const cfg = getApiConfig();
+            const select = document.getElementById('modelSwitch');
+            if (!cfg || !select) return;
+            select.innerHTML = cfg.models.map((m, i) => 
+                `<option value="${i}" ${i === cfg.activeModelIndex ? 'selected' : ''}>${escapeHtml(m.label || m.name)}</option>`
+            ).join('');
+        }
+        // ==========================================
+
+        let chatHistory = [];
+        let currentChatId = null;
+
+        async function loadHistoryFromServer() {
+            try {
+                const rows = await api('/api/history');
+                chatHistory = rows.map(r => ({
+                    id: r.id,
+                    title: r.title,
+                    messages: r.messages || [],
+                    pinned: !!r.pinned
+                }));
+            } catch {
+                chatHistory = [];
+            }
+        }
+
+        // ================= 模板数据 =================
+        const TEMPLATES = {
+            bond: {
+                text: "请对以下债券进行定价预测分析：\n\n发行人：[填写发行人名称]\n主体评级：[AAA/AA+ 等]\n债券期限：[如 3年/5年/10年]\n发行规模：[如 10亿元]\n行业：[如城投/地产/产业]\n近期同类债券参考：[如有请填写]\n\n请给出基准锚定、信用溢价、核心定价区间及风险提示。",
+                mode: "predict"
+            },
+            credit: {
+                text: "请对以下主体进行信用风险分析：\n\n主体名称：[填写名称]\n所属行业：[填写行业]\n最新评级：[填写评级]\n关注要点：[财务杠杆/现金流/担保情况/政策风险等]\n\n请从基本面、财务指标、外部支持、行业风险四个维度进行深度剖析，并给出信用展望。",
+                mode: "think"
+            },
+            prospectus: {
+                text: "请帮我解读以下债券募集说明书的关键内容，提炼核心风险点与投资亮点：\n\n[请粘贴募集说明书核心段落或上传文件内容]\n\n要求：\n1. 提炼募集资金用途及合理性\n2. 分析发行人偿债能力与增信措施\n3. 识别重大风险提示中的核心条款\n4. 总结本次发行的投资价值与关注点",
+                mode: "chat"
+            },
+            macro: {
+                text: "请基于最新宏观经济与货币政策环境，对以下方面进行点评分析：\n\n分析维度：[GDP/PMI/CPI/利率政策/流动性/汇率等]\n\n要求结合当前债市影响，给出对收益率曲线、信用利差及机构配置行为的判断。",
+                mode: "think"
+            },
+            curve: {
+                text: "请分析当前国债/国开债收益率曲线形态，并与历史同期进行对比：\n\n期限关注点：[如 1Y/3Y/5Y/10Y]\n\n要求给出曲线变陡/变平判断、骑乘策略建议及关键期限的利率区间预测。",
+                mode: "predict"
+            }
+        };
+
+        function applyTemplate(key) {
+            const t = TEMPLATES[key];
+            if (!t) return;
+            const input = document.getElementById('userInput');
+            const modeSelect = document.getElementById('modeSelect');
+            input.value = t.text;
+            modeSelect.value = t.mode;
+            input.style.height = 'auto';
+            input.style.height = input.scrollHeight + 'px';
+            input.focus();
+        }
+        // ==========================================
+
+        // ================= 文件上传 =================
+        function handleDragOver(e) { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--accent-color)'; }
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.style.borderColor = '';
+            const files = e.dataTransfer.files;
+            if (files.length) handleFile(files[0]);
+        }
+        function handleFileSelect(e) {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        }
+        function handlePaste(e) {
+            const items = e.clipboardData.items;
+            for (let item of items) {
+                if (item.kind === 'file') {
+                    const file = item.getAsFile();
+                    if (file) { e.preventDefault(); handleFile(file); return; }
+                }
+            }
+        }
+        function handleFile(file) {
+            const allowed = /\.(txt|md|csv|json)$/i;
+            if (!allowed.test(file.name)) {
+                alert('暂不支持该格式，请上传 .txt / .md / .csv / .json 文件，或直接将内容复制粘贴到输入框。');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const input = document.getElementById('userInput');
+                const prefix = `【文件: ${file.name}】\n\`\`\`\n${ev.target.result}\n\`\`\`\n\n请分析以上文件内容：\n`;
+                input.value = prefix;
+                input.style.height = 'auto';
+                input.style.height = Math.min(input.scrollHeight, 200) + 'px';
+            };
+            reader.readAsText(file);
+        }
+        // ==========================================
+
+        // ================= 导出功能 =================
+        function toggleExportMenu(e) {
+            e.stopPropagation();
+            document.getElementById('exportDropdown').classList.toggle('active');
+        }
+        document.addEventListener('click', () => document.getElementById('exportDropdown').classList.remove('active'));
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function getCurrentChatForExport() {
+            const chat = chatHistory.find(c => c.id === currentChatId);
+            if (!chat || !chat.messages.length) {
+                alert('当前会话无内容可导出');
+                return null;
+            }
+            return chat;
+        }
+
+        function exportMarkdown() {
+            const chat = getCurrentChatForExport();
+            if (!chat) return;
+            let md = `# 金融助手对话记录\n\n> 导出时间: ${new Date().toLocaleString()}\n\n---\n\n`;
+            chat.messages.forEach((msg, idx) => {
+                md += `### 用户提问 ${idx + 1}\n\n${msg.q}\n\n### 助手回复\n\n${msg.a}\n\n`;
+                if (msg.r) md += `#### 思考过程\n\n${msg.r}\n\n`;
+                md += `---\n\n`;
+            });
+            downloadFile(md, `对话记录_${chat.id}.md`, 'text/markdown');
+        }
+
+        function exportWord() {
+            const chat = getCurrentChatForExport();
+            if (!chat) return;
+            let html = `<html><head><meta charset="utf-8"><title>对话记录</title><style>body{font-family:"Microsoft YaHei",sans-serif;line-height:1.8;max-width:800px;margin:40px auto;color:#333;}h1{color:#2f81f7;}h2{border-bottom:1px solid #eee;padding-bottom:6px;margin-top:30px;}blockquote{border-left:4px solid #2f81f7;margin:0;padding-left:15px;color:#666;}hr{border:none;border-top:1px solid #eee;margin:20px 0;}</style></head><body>`;
+            html += `<h1>金融助手对话记录</h1><p>导出时间: ${new Date().toLocaleString()}</p><hr>`;
+            chat.messages.forEach((msg, idx) => {
+                html += `<h2>提问 ${idx + 1}</h2><blockquote>${escapeHtml(msg.q).replace(/\n/g, '<br>')}</blockquote>`;
+                html += `<h2>回复</h2><p>${escapeHtml(msg.a).replace(/\n/g, '<br>')}</p>`;
+                if (msg.r) html += `<h3>思考过程</h3><p style="color:#666;font-size:13px;">${escapeHtml(msg.r).replace(/\n/g, '<br>')}</p>`;
+                html += '<hr>';
+            });
+            html += '</body></html>';
+            downloadFile(html, `对话记录_${chat.id}.doc`, 'application/msword');
+        }
+
+        function exportPrint() {
+            const chat = getCurrentChatForExport();
+            if (!chat) return;
+            window.print();
+        }
+        // ==========================================
+
+        // ================= 图表可视化 =================
+        let chartInstance = null;
+        let currentChartData = null;
+        let currentChartType = 'bar';
+
+        function openChartFromTable(btn) {
+            const table = btn.previousElementSibling;
+            const rows = Array.from(table.querySelectorAll('tr'));
+            if (rows.length < 2) return;
+            const headers = Array.from(rows[0].querySelectorAll('th,td')).map(th => th.textContent.trim());
+            const dataRows = rows.slice(1).map(row => 
+                Array.from(row.querySelectorAll('td,th')).map(td => td.textContent.trim())
+            );
+            currentChartData = { headers, rows: dataRows };
+            currentChartType = 'bar';
+            document.getElementById('chartOverlay').classList.add('active');
+            document.querySelectorAll('.chart-type-btns button').forEach(b => b.classList.remove('active'));
+            document.querySelector('.chart-type-btns button:first-child').classList.add('active');
+            setTimeout(() => renderChart(), 50);
+        }
+
+        function closeChart(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('chartOverlay').classList.remove('active');
+            if (chartInstance) { chartInstance.dispose(); chartInstance = null; }
+        }
+
+        function setChartType(type, btn) {
+            currentChartType = type;
+            document.querySelectorAll('.chart-type-btns button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderChart();
+        }
+
+        function renderChart() {
+            const container = document.getElementById('chartContainer');
+            if (!container || !currentChartData) return;
+            if (chartInstance) chartInstance.dispose();
+            chartInstance = echarts.init(container, 'dark');
+            const { headers, rows } = currentChartData;
+            const categories = rows.map(r => r[0]);
+            const seriesNames = headers.slice(1);
+            
+            let option;
+            if (currentChartType === 'pie') {
+                const pieData = rows.map(r => ({ name: r[0], value: parseFloat(r[1]) || 0 }));
+                option = {
+                    backgroundColor: 'transparent',
+                    tooltip: { trigger: 'item' },
+                    series: [{
+                        type: 'pie', radius: ['40%', '70%'],
+                        data: pieData,
+                        label: { color: '#c9d1d9' }
+                    }]
+                };
+            } else {
+                const series = seriesNames.map((name, idx) => ({
+                    name,
+                    type: currentChartType,
+                    data: rows.map(r => parseFloat(r[idx + 1]) || 0),
+                    smooth: true,
+                    itemStyle: { borderRadius: currentChartType === 'bar' ? [4, 4, 0, 0] : 0 }
+                }));
+                option = {
+                    backgroundColor: 'transparent',
+                    tooltip: { trigger: 'axis' },
+                    legend: { data: seriesNames, textStyle: { color: '#8b949e' } },
+                    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                    xAxis: { type: 'category', data: categories, axisLine: { lineStyle: { color: '#30363d' } }, axisLabel: { color: '#8b949e' } },
+                    yAxis: { type: 'value', axisLine: { lineStyle: { color: '#30363d' } }, axisLabel: { color: '#8b949e' }, splitLine: { lineStyle: { color: '#21262d' } } },
+                    series
+                };
+            }
+            chartInstance.setOption(option);
+        }
+        window.addEventListener('resize', () => chartInstance && chartInstance.resize());
+        // ============================================
+
+        // ================= 配置弹窗逻辑 =================
+        function openConfigModal() {
+            document.getElementById('cfgUsername').textContent = reqUsername || '-';
+            const cfg = getApiConfig();
+            if (cfg && cfg.models) {
+                renderModelList(cfg.models);
+            } else {
+                renderModelList([{ name: 'kimi-k2.6', label: 'Kimi K2.6' }]);
+            }
+            document.getElementById('configModal').classList.add('active');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.remove('active');
+        }
+
+        function renderModelList(models) {
+            const box = document.getElementById('modelListBox');
+            box.innerHTML = models.map((m, i) => `
+                <div class="model-item" data-index="${i}">
+                    <input type="text" placeholder="模型ID" class="m-name" value="${escapeHtml(m.name)}" title="API 请求使用的模型ID">
+                    <input type="text" placeholder="显示名称" class="m-label" value="${escapeHtml(m.label || m.name)}" title="界面显示的名称">
+                    ${models.length > 1 ? `<button class="del-model" onclick="this.parentElement.remove()">&times;</button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function addModelRow() {
+            const box = document.getElementById('modelListBox');
+            const div = document.createElement('div');
+            div.className = 'model-item';
+            div.innerHTML = `<input type="text" placeholder="模型ID" class="m-name"><input type="text" placeholder="显示名称" class="m-label"><button class="del-model" onclick="this.parentElement.remove()">&times;</button>`;
+            box.appendChild(div);
+        }
+
+        async function saveConfig() {
+            const modelItems = document.querySelectorAll('.model-item');
+            const models = [];
+            modelItems.forEach(item => {
+                const name = item.querySelector('.m-name').value.trim();
+                const label = item.querySelector('.m-label').value.trim() || name;
+                if (name) models.push({ name, label });
+            });
+            if (models.length === 0) { alert('请至少填写一个模型'); return; }
+
+            const oldCfg = getApiConfig() || {};
+            const cfg = { models, activeModelIndex: oldCfg.activeModelIndex || 0 };
+            if (cfg.activeModelIndex >= models.length) cfg.activeModelIndex = 0;
+            await setApiConfig(cfg);
+            updateModelSwitchUI();
+            closeConfigModal();
+            alert('配置已保存');
+        }
+        // ============================================
+
+        async function initApp() {
+            try {
+                await loadHistoryFromServer();
+                await loadApiConfig();
+                const cfg = getApiConfig();
+                if (!cfg) openConfigModal();
+                updateModelSwitchUI();
+                renderHistory();
+                startNewChat();
+            } catch (err) {
+                console.error('Init error:', err);
+            }
+        }
+
+        window.onload = async () => {
+            const ok = await checkAuth();
+            if (ok) {
+                hideAuthModal();
+                await initApp();
+            } else {
+                showAuthModal();
+            }
+        };
+
+        function showAuthModal() {
+            document.getElementById('authModal').classList.add('active');
+        }
+        function hideAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+        async function handleLogin() {
+            const u = document.getElementById('authUsername').value.trim();
+            const p = document.getElementById('authPassword').value;
+            const errEl = document.getElementById('authError');
+            if (!u || !p) { errEl.textContent = '请填写用户名和密码'; errEl.style.display = 'block'; return; }
+            try {
+                await login(u, p);
+                errEl.style.display = 'none';
+            } catch (e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+        }
+        async function handleRegister() {
+            const u = document.getElementById('authUsername').value.trim();
+            const p = document.getElementById('authPassword').value;
+            const errEl = document.getElementById('authError');
+            if (!u || !p) { errEl.textContent = '请填写用户名和密码'; errEl.style.display = 'block'; return; }
+            if (u.length < 3) { errEl.textContent = '用户名至少3位'; errEl.style.display = 'block'; return; }
+            if (p.length < 6) { errEl.textContent = '密码至少6位'; errEl.style.display = 'block'; return; }
+            try {
+                await register(u, p);
+                errEl.style.display = 'none';
+            } catch (e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function startNewChat() {
+            currentChatId = Date.now();
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
+            const welcome = document.createElement('div');
+            welcome.className = 'message ai';
+            welcome.innerHTML = `<div class="ai-avatar">AI</div><div class="bubble"><div style="font-family: var(--font-tech); color: var(--accent-color); font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;">◈ CCDC 智能金融助手 · 新会话</div>您好，我是AI智能机器人小发，您的专属私人债券助手~竭诚为您服务。</div><div class="status-info"><span>Mode: Hybrid</span><span>CCDC Neural Engine</span></div>`;
+            container.appendChild(welcome);
+            renderHistory();
+        }
+
+        async function sendMessage() {
+            const cfg = getApiConfig();
+            if (!cfg) { openConfigModal(); return; }
+            const model = getActiveModel(cfg);
+            if (!model) { alert('请先在配置中设置模型'); return; }
+
+            const input = document.getElementById('userInput');
+            const mode = document.getElementById('modeSelect').value;
+            const text = input.value.trim();
+            const btn = document.getElementById('sendBtn');
+            const container = document.getElementById('messagesContainer');
+
+            if (!text || btn.disabled) return;
+
+            appendMessage('user', text);
+            input.value = '';
+            input.style.height = '24px';
+            btn.disabled = true;
+
+            const loadingId = 'msg-' + Date.now();
+            const msgWrapper = document.createElement('div');
+            msgWrapper.className = 'message ai';
+            msgWrapper.id = loadingId;
+            msgWrapper.innerHTML = `
+                <div class="ai-avatar">AI</div>
+                <div class="bubble">
+                    <details class="think-box" id="think-box-${loadingId}" style="display: none;" open>
+                        <summary>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                            <span id="think-status-${loadingId}" class="think-status-text">正在深入思考...</span>
+                        </summary>
+                        <div class="think-content" id="think-content-${loadingId}"></div>
+                    </details>
+                    <div class="answer-content" id="answer-content-${loadingId}">
+                        <div class="typing"><span></span><span></span><span></span></div>
+                    </div>
+                </div>
+                <div class="status-info"><span id="state-${loadingId}">内核连接中...</span></div>`;
+            container.appendChild(msgWrapper);
+            container.scrollTop = container.scrollHeight;
+
+            let systemPrompt = "";
+            let finalPrompt = "";
+            const personaPrompt = (typeof getActivePersonaPrompt === 'function') ? getActivePersonaPrompt() : '';
+
+            if (mode === 'chat') {
+                systemPrompt = personaPrompt || "你是一位资深固定收益分析师与债券发行顾问。请基于最新宏观经济数据、货币政策与固收市场动态，提供客观、严谨、数据驱动的专业解答。你的语言需要简明扼要、直击核心，避免废话。";
+                finalPrompt = `请作为专业债券顾问，回答以下问题或分析以下情境：\n\n${text}`;
+                setTextContent(document.getElementById(`state-${loadingId}`), "正在检索金融知识库...");
+            } else if (mode === 'think') {
+                systemPrompt = personaPrompt || "你是一位首席固收策略师（Chief Fixed Income Strategist）。你的核心能力是执行严密的逻辑演绎（Chain of Thought）。在回答时，必须全盘考虑宏观流动性、信用利差、机构行为及监管政策，展现具备高度专业深度的剖析过程。";
+                finalPrompt = `请对以下议题进行深度逻辑推演。回复要求必须包含以下层级结构：\n1. 【核心因素拆解】：提取影响该事件/定价的核心变量。\n2. 【多空博弈逻辑】：分析当前市场环境下的利好与利空因素交叉影响。\n3. 【尾部风险评估】：评估潜在的流动性风险或信用违约风险。\n4. 【最终策略结论】：给出明确的机构级应对策略或结论。\n\n分析议题：${text}`;
+                setTextContent(document.getElementById(`state-${loadingId}`), "CoT 深度推理引擎已启动...");
+            } else if (mode === 'predict') {
+                systemPrompt = personaPrompt || "你是一个顶级的量化债券定价与发行预测引擎（AI-Pricer）。你需要结合国债收益率曲线、基准利率（LPR/MLF）、信用溢价及近期同类债券发行结果，提供具备高置信度的前瞻性量化预测。严禁使用模棱两可的词汇，必须输出结构化、量化的精准估算。";
+                finalPrompt = `请作为债券发行预测专家，对以下场景执行结构化量化预测分析。请务必严格遵循以下格式输出结论：\n\n- 【基准锚定】：分析当前定价基准（如国债收益率或同期限票据利率）。\n- 【信用溢价预测】：结合主体评级与行业利差，估算合理信用利差（BP）。\n- 【核心定价预测】：直接给出预测的票面利率绝对值区间（如 2.50% - 2.80%）。\n- 【发行情绪与胜率】：基于当前资金面，评估全额认购概率及边际倍数预期。\n- 【风险提示】：指出可能导致发行利率偏离预测值的关键风险点。\n\n数据/场景输入：${text}`;
+                setTextContent(document.getElementById(`state-${loadingId}`), "量化定价预测模型计算中...");
+            }
+
+            let apiMessages = [{ role: "system", content: systemPrompt }];
+            const currentChat = chatHistory.find(c => c.id === currentChatId);
+            if (currentChat && currentChat.messages && currentChat.messages.length > 0) {
+                currentChat.messages.slice(-5).forEach(msg => {
+                    apiMessages.push({ role: "user", content: msg.q });
+                    apiMessages.push({ role: "assistant", content: msg.a });
+                });
+            }
+            apiMessages.push({ role: "user", content: finalPrompt });
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
+                    body: JSON.stringify({ model: model.name, messages: apiMessages, temperature: 1, stream: true, mode, userMessage: text })
+                });
+
+                if (!response.ok) {
+                    let errMsg = `HTTP ${response.status}`;
+                    try {
+                        const errJson = await response.json();
+                        if (errJson.error) errMsg = errJson.error;
+                    } catch {}
+                    throw new Error(errMsg);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let fullReasoning = "", fullAnswer = "", buffer = "";
+                let isThinkingTag = false, hasClearedTyping = false;
+
+                const thinkBox = document.getElementById(`think-box-${loadingId}`);
+                const thinkContent = document.getElementById(`think-content-${loadingId}`);
+                const thinkStatus = document.getElementById(`think-status-${loadingId}`);
+                const answerBox = document.getElementById(`answer-content-${loadingId}`);
+                const statusState = document.getElementById(`state-${loadingId}`);
+
+                setTextContent(statusState, "正在接收数据...");
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    for (let line of lines) {
+                        line = line.trim();
+                        if (!line) continue;
+                        if (line === 'data: [DONE]') break;
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                const delta = data.choices[0].delta;
+                                if (delta.reasoning_content) {
+                                    if (thinkBox.style.display === 'none') thinkBox.style.display = 'block';
+                                    fullReasoning += delta.reasoning_content;
+                                    thinkContent.innerHTML = renderMarkdown(fullReasoning);
+                                    container.scrollTop = container.scrollHeight;
+                                }
+                                if (delta.content) {
+                                    let chunkText = delta.content;
+                                    if (chunkText.includes('<think>')) {
+                                        isThinkingTag = true;
+                                        chunkText = chunkText.replace('<think>', '');
+                                        if (thinkBox.style.display === 'none') thinkBox.style.display = 'block';
+                                    }
+                                    if (chunkText.includes('</think>')) {
+                                        isThinkingTag = false;
+                                        chunkText = chunkText.replace('</think>', '');
+                                        thinkStatus.innerText = "思考完成";
+                                        thinkStatus.classList.remove("think-status-text");
+                                        thinkBox.removeAttribute("open");
+                                    }
+                                    if (isThinkingTag) {
+                                        fullReasoning += chunkText;
+                                        thinkContent.innerHTML = renderMarkdown(fullReasoning);
+                                    } else {
+                                        if (!hasClearedTyping) {
+                                            answerBox.innerHTML = "";
+                                            hasClearedTyping = true;
+                                            if (thinkBox.style.display === 'block') {
+                                                thinkStatus.innerText = "思考完成";
+                                                thinkStatus.classList.remove("think-status-text");
+                                            }
+                                        }
+                                        fullAnswer += chunkText;
+                                        answerBox.innerHTML = renderMarkdown(fullAnswer);
+                                    }
+                                    container.scrollTop = container.scrollHeight;
+                                }
+                            } catch (e) {
+                                console.warn("SSE JSON解析跳过该块: ", line);
+                            }
+                        }
+                    }
+                }
+
+                if (!hasClearedTyping) {
+                    answerBox.innerHTML = fullAnswer ? renderMarkdown(fullAnswer) : "无数据返回。";
+                }
+
+                if (mode === 'predict') {
+                    const predictCard = document.createElement('div');
+                    predictCard.className = 'data-card';
+                    predictCard.innerHTML = `<h4><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg> 以上为预测结果，已为您生成结构化输出</h4><code>计算引擎: ${escapeHtml(model.label || model.name)} </code>`;
+                    answerBox.appendChild(predictCard);
+                }
+
+                statusState.innerHTML = `Tokens: ${text.length} | Status: Success | Mode: ${escapeHtml(mode)}`;
+                saveChatToHistory(text, fullAnswer, fullReasoning);
+
+            } catch (error) {
+                console.error(error);
+                const answerBox = document.getElementById(`answer-content-${loadingId}`);
+                const statusState = document.getElementById(`state-${loadingId}`);
+                let displayMsg = "请求失败，请检查网络连接或 API 配置。";
+                const msg = error.message || "";
+                if (msg.includes("401") || msg.includes("403") || msg.includes("Unauthorized")) {
+                    displayMsg = "认证失败：API Key 无效或已过期。";
+                } else if (msg.includes("429")) {
+                    displayMsg = "请求过于频繁，请稍后再试。";
+                } else if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+                    displayMsg = "网络错误：无法连接到 API 服务器。";
+                } else if (msg.includes("API 接口异常") || msg.includes("invalid")) {
+                    displayMsg = msg;
+                }
+                if (answerBox) answerBox.innerHTML = `<span style="color:#f85149;">❌ ${escapeHtml(displayMsg)}</span>`;
+                if (statusState) setTextContent(statusState, "请求失败");
+            } finally {
+                btn.disabled = false;
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function appendMessage(role, text) {
+            const container = document.getElementById('messagesContainer');
+            const wrapper = document.createElement('div');
+            wrapper.className = `message ${role}`;
+            wrapper.innerHTML = `<div class="bubble">${escapeHtml(text).replace(/\n/g, '<br>')}</div><div class="status-info"><span>${new Date().toLocaleTimeString()}</span></div>`;
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function saveChatToHistory(q, a, reasoning = "") {
+            const index = chatHistory.findIndex(c => c.id === currentChatId);
+            if (index !== -1) {
+                chatHistory[index].messages.push({ q, a, r: reasoning });
+                await syncChatToServer(chatHistory[index]);
+            } else {
+                const newChat = { id: Date.now(), title: q.substring(0, 12) + "...", messages: [{ q, a, r: reasoning }] };
+                const result = await api('/api/history', {
+                    method: 'POST',
+                    body: JSON.stringify({ title: newChat.title, messages: newChat.messages })
+                });
+                newChat.id = result.id;
+                currentChatId = result.id;
+                chatHistory.unshift(newChat);
+            }
+            if (chatHistory.length > 15) { chatHistory.pop(); }
+            renderHistory();
+        }
+
+        async function syncChatToServer(chat) {
+            try {
+                await api('/api/history', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: chat.id, title: chat.title, messages: chat.messages, pinned: chat.pinned })
+                });
+            } catch (e) { console.error('Sync history error:', e); }
+        }
+
+        async function syncHistoryToServer() {
+            for (const chat of chatHistory) {
+                await syncChatToServer(chat);
+            }
+        }
+
+        function saveAndRender() {
+            chatHistory.sort((a, b) => {
+                if (a.pinned && !b.pinned) return -1;
+                if (!a.pinned && b.pinned) return 1;
+                return b.id - a.id;
+            });
+            syncHistoryToServer().then(() => renderHistory());
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = chatHistory.map(chat => `
+                <div class="history-item ${chat.id === currentChatId ? 'active' : ''} ${chat.pinned ? 'pinned' : ''}" onclick="loadChat(${chat.id})">
+                    <div class="history-title" title="${escapeHtml(chat.title)}">${escapeHtml(chat.title)}</div>
+                    <div class="item-actions">
+                        <button class="action-btn" onclick="togglePin(${chat.id}, event)" title="置顶">${chat.pinned ? '📍' : '📌'}</button>
+                        <button class="action-btn" onclick="renameChat(${chat.id}, event)" title="重命名">✏️</button>
+                        <button class="action-btn del" onclick="deleteChat(${chat.id}, event)" title="删除">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function togglePin(id, e) {
+            e.stopPropagation();
+            const chat = chatHistory.find(c => c.id === id);
+            if (chat) { chat.pinned = !chat.pinned; saveAndRender(); }
+        }
+
+        function renameChat(id, e) {
+            e.stopPropagation();
+            const chat = chatHistory.find(c => c.id === id);
+            const newName = prompt("请输入对话新名称：", chat.title);
+            if (newName && newName.trim()) { chat.title = newName.trim(); saveAndRender(); }
+        }
+
+        async function deleteChat(id, e) {
+            e.stopPropagation();
+            if (confirm("确定要删除这段对话吗？此操作不可撤销。")) {
+                try { await api('/api/history/' + id, { method: 'DELETE' }); } catch {}
+                chatHistory = chatHistory.filter(c => c.id !== id);
+                if (currentChatId === id) startNewChat();
+                else renderHistory();
+            }
+        }
+
+        function loadChat(id) {
+            currentChatId = id;
+            const chat = chatHistory.find(c => c.id === id);
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
+            chat.messages.forEach(msg => {
+                appendMessage('user', msg.q);
+                let rHtml = "";
+                if (msg.r) {
+                    rHtml = `<details class="think-box"><summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg> 思考完成</summary><div class="think-content">${escapeHtml(msg.r).replace(/\n/g, '<br>')}</div></details>`;
+                }
+                const aiWrapper = document.createElement('div');
+                aiWrapper.className = 'message ai';
+                aiWrapper.innerHTML = `<div class="ai-avatar">AI</div><div class="bubble">${rHtml}<div class="answer-content">${escapeHtml(msg.a).replace(/\n/g, '<br>')}</div></div><div class="status-info"><span>History Data</span></div>`;
+                container.appendChild(aiWrapper);
+            });
+            renderHistory();
+            setTimeout(() => container.scrollTop = container.scrollHeight, 50);
+        }
+
+        async function clearAllData() {
+            if (!confirm("⚠️ 确定要清空所有数据吗？\n\n此操作不可撤销！")) return;
+            for (const chat of chatHistory) {
+                try { await api('/api/history/' + chat.id, { method: 'DELETE' }); } catch {}
+            }
+            chatHistory = [];
+            startNewChat();
+            updateModelSwitchUI();
+            alert("所有数据已清空");
+        }
+
+        // ================= 系统时钟与启动序列 =================
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false });
+            const sysClock = document.getElementById('sysClock');
+            const headerClock = document.getElementById('headerClock');
+            if (sysClock) sysClock.textContent = timeStr;
+            if (headerClock) headerClock.textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+        // ================================================
+
+        // ================= 侧边栏折叠面板 =================
+        const FOLD_STATE_KEY = 'finChatFoldState_v3';
+        function getFoldState() {
+            try { return JSON.parse(localStorage.getItem(FOLD_STATE_KEY)) || {}; } catch { return {}; }
+        }
+        function saveFoldState(state) { localStorage.setItem(FOLD_STATE_KEY, JSON.stringify(state)); }
+        function toggleFold(panelId) {
+            const panel = document.getElementById(panelId);
+            if (!panel) return;
+            panel.classList.toggle('collapsed');
+            const state = getFoldState();
+            state[panelId] = panel.classList.contains('collapsed');
+            saveFoldState(state);
+        }
+        function initFoldPanels() {
+            const state = getFoldState();
+            ['panel-templates', 'panel-market', 'panel-kb'].forEach(id => {
+                const panel = document.getElementById(id);
+                if (!panel) return;
+                if (state[id] === true) panel.classList.add('collapsed');
+                else if (state[id] === false) panel.classList.remove('collapsed');
+                // 默认：templates展开，market和kb折叠（已在HTML中设置collapsed类）
+            });
+        }
+        initFoldPanels();
+        // ================================================
+
+        // ================= F4 主题切换 =================
+        const THEME_KEY = 'finChatTheme_v3';
+        const THEMES = ['dark', 'light', 'cyber'];
+        const THEME_LABELS = { dark: '深色', light: '浅色', cyber: '动感' };
+        function loadTheme() {
+            const t = localStorage.getItem(THEME_KEY) || 'dark';
+            document.body.classList.remove('theme-light', 'theme-cyber');
+            if (t === 'light') document.body.classList.add('theme-light');
+            if (t === 'cyber') document.body.classList.add('theme-cyber');
+            const lbl = document.getElementById('themeLabel');
+            if (lbl) lbl.textContent = THEME_LABELS[t] || 'HUD';
+        }
+        function cycleTheme() {
+            const current = localStorage.getItem(THEME_KEY) || 'dark';
+            const idx = THEMES.indexOf(current);
+            const next = THEMES[(idx + 1) % THEMES.length];
+            localStorage.setItem(THEME_KEY, next);
+            loadTheme();
+        }
+        loadTheme();
+        // ================================================
+
+        // ================= F21 端到端加密 =================
+        const ENCRYPTION_KEY = 'finChatEncKey_v3';
+        async function deriveKey(password, salt) {
+            const enc = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+            return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+        }
+        async function encryptData(plaintext, password) {
+            const enc = new TextEncoder();
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const key = await deriveKey(password, salt);
+            const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(plaintext));
+            const combined = new Uint8Array(salt.length + iv.length + ciphertext.byteLength);
+            combined.set(salt, 0);
+            combined.set(iv, salt.length);
+            combined.set(new Uint8Array(ciphertext), salt.length + iv.length);
+            return btoa(String.fromCharCode(...combined));
+        }
+        async function decryptData(ciphertextB64, password) {
+            try {
+                const data = Uint8Array.from(atob(ciphertextB64), c => c.charCodeAt(0));
+                const salt = data.slice(0, 16);
+                const iv = data.slice(16, 28);
+                const ciphertext = data.slice(28);
+                const key = await deriveKey(password, salt);
+                const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+                return new TextDecoder().decode(decrypted);
+            } catch { throw new Error('解密失败，密码错误或数据已损坏'); }
+        }
+        async function getSecurePassword() {
+            let pwd = sessionStorage.getItem(ENCRYPTION_KEY);
+            if (!pwd) {
+                pwd = prompt('🔐 请设置本地数据加密密码（仅保存在当前会话）：');
+                if (!pwd) return null;
+                sessionStorage.setItem(ENCRYPTION_KEY, pwd);
+            }
+            return pwd;
+        }
+        // 覆盖原有的配置读写，增加加密层
+        const _origGetConfig = getApiConfig;
+        const _origSetConfig = setApiConfig;
+        async function getEncryptedConfig() {
+            try {
+                const enc = localStorage.getItem(CONFIG_KEY + '_enc');
+                if (enc) {
+                    const pwd = await getSecurePassword();
+                    if (!pwd) return _origGetConfig();
+                    const plain = await decryptData(enc, pwd);
+                    return JSON.parse(plain);
+                }
+            } catch {}
+            return _origGetConfig();
+        }
+        async function setEncryptedConfig(cfg) {
+            try {
+                const pwd = await getSecurePassword();
+                if (pwd) {
+                    const enc = await encryptData(JSON.stringify(cfg), pwd);
+                    localStorage.setItem(CONFIG_KEY + '_enc', enc);
+                    localStorage.removeItem(CONFIG_KEY);
+                    return;
+                }
+            } catch {}
+            _origSetConfig(cfg);
+        }
+        // 延迟覆盖，等原函数定义后
+        // ================================================
+
+        // ================= F22 备份与恢复 =================
+        function exportBackup() {
+            const data = {
+                chatHistory,
+                config: getApiConfig(),
+                theme: localStorage.getItem(THEME_KEY),
+                personas: getPersonas(),
+                kbFiles: getKbFiles(),
+                exportTime: new Date().toISOString(),
+                version: '3.1'
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `CCDC_AI_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('✅ 备份已导出');
+        }
+        function importBackupPrompt() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+                    if (!confirm(`确认恢复备份？\n备份时间: ${data.exportTime || '未知'}\n这将覆盖当前所有数据！`)) return;
+                    if (data.chatHistory) {
+                        chatHistory = data.chatHistory;
+                        localStorage.setItem(HISTORY_KEY, JSON.stringify(chatHistory));
+                    }
+                    if (data.config) {
+                        setApiConfig(data.config);
+                    }
+                    if (data.theme) localStorage.setItem(THEME_KEY, data.theme);
+                    if (data.personas) savePersonas(data.personas);
+                    if (data.kbFiles) saveKbFiles(data.kbFiles);
+                    loadTheme();
+                    renderHistory();
+                    updateModelSwitchUI();
+                    alert('✅ 数据恢复成功');
+                    location.reload();
+                } catch (err) {
+                    alert('❌ 恢复失败: ' + err.message);
+                }
+            };
+            input.click();
+        }
+        // ================================================
+
+        // ================= F23 统计面板 =================
+        const STATS_KEY = 'finChatStats_v3';
+        function getStats() {
+            try { return JSON.parse(localStorage.getItem(STATS_KEY)) || {}; } catch { return {}; }
+        }
+        function saveStats(s) { localStorage.setItem(STATS_KEY, JSON.stringify(s)); }
+        function recordStat(type, value = 1) {
+            const s = getStats();
+            const today = new Date().toISOString().slice(0,10);
+            s[type] = (s[type] || 0) + value;
+            s.lastActive = Date.now();
+            if (type === 'message') {
+                s.dailyMessages = s.dailyMessages || {};
+                s.dailyMessages[today] = (s.dailyMessages[today] || 0) + value;
+            }
+            saveStats(s);
+        }
+        function openStatsModal() {
+            const s = getStats();
+            const sessions = chatHistory.length;
+            let messages = 0;
+            chatHistory.forEach(c => messages += (c.messages ? c.messages.length : 0));
+            const tokens = Math.floor((s.tokens || 0) + messages * 150);
+            const ms = Date.now() - (s.firstVisit || Date.now());
+            const hours = Math.max(0, Math.floor(ms / 3600000));
+            document.getElementById('statSessions').textContent = sessions;
+            document.getElementById('statMessages').textContent = messages;
+            document.getElementById('statTokens').textContent = tokens.toLocaleString();
+            document.getElementById('statTime').textContent = hours + 'h';
+            document.getElementById('statsOverlay').classList.add('active');
+        }
+        function closeStatsModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('statsOverlay').classList.remove('active');
+        }
+        // 初始化首次访问时间
+        const _stats = getStats();
+        if (!_stats.firstVisit) { _stats.firstVisit = Date.now(); saveStats(_stats); }
+        // ================================================
+
+        // ================= F19 自动标题生成 =================
+        async function autoGenerateTitle(chatId, userText) {
+            const chat = chatHistory.find(c => c.id === chatId);
+            if (!chat || chat.messages.length !== 1 || chat.title !== userText.substring(0, 12) + '...') return;
+            const keywords = [
+                ['债券', '定价', '利率', '票面', '发行'], ['信用', '评级', '违约', '风险', '主体'],
+                ['募集', '说明书', '条款', '偿债'], ['宏观', 'GDP', 'PMI', 'CPI', '货币', '政策'],
+                ['曲线', '收益率', '期限', '骑乘', '利差'], ['ESG', '绿色', '碳', '可持续']
+            ];
+            const labels = ['债券定价', '信用分析', '募集解读', '宏观点评', '曲线分析', 'ESG分析'];
+            let best = -1, maxScore = 0;
+            keywords.forEach((group, idx) => {
+                const score = group.reduce((a, w) => a + (userText.includes(w) ? 1 : 0), 0);
+                if (score > maxScore) { maxScore = score; best = idx; }
+            });
+            if (best >= 0) {
+                chat.title = labels[best] + ' · ' + new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+            } else {
+                chat.title = userText.substring(0, 10) + (userText.length > 10 ? '…' : '');
+            }
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(chatHistory));
+            renderHistory();
+        }
+        // ================================================
+
+        // ================= F6 实时市场数据模拟 =================
+        function updateMarketData() {
+            const base = { m1: 2.145, m2: 2.235, m3: 128.5, m4: 42186 };
+            const now = new Date();
+            const seed = now.getHours() * 60 + now.getMinutes();
+            const rand = (s) => {
+                const x = Math.sin(s) * 10000;
+                return x - Math.floor(x);
+            };
+            const v1 = (base.m1 + (rand(seed) - 0.5) * 0.02).toFixed(3);
+            const v2 = (base.m2 + (rand(seed + 1) - 0.5) * 0.02).toFixed(3);
+            const v3 = (base.m3 + (rand(seed + 2) - 0.5) * 0.5).toFixed(1);
+            const v4 = Math.floor(base.m4 + (rand(seed + 3) - 0.5) * 300);
+            const c1 = (rand(seed) - 0.5) * 3;
+            const c2 = (rand(seed + 1) - 0.5) * 3;
+            const c3 = (rand(seed + 2) - 0.5) * 1.5;
+            const c4 = Math.floor((rand(seed + 3) - 0.5) * 500);
+            function setEl(id, val, change, suffix = '') {
+                const el = document.getElementById(id);
+                const cel = document.getElementById('c' + id.slice(1));
+                if (el) el.textContent = val + suffix;
+                if (cel) {
+                    cel.textContent = (change >= 0 ? '+' : '') + change.toFixed ? change.toFixed(1) + 'bp' : change;
+                    cel.className = 'market-change ' + (change >= 0 ? 'market-up' : 'market-down');
+                }
+            }
+            setEl('m1', v1 + '%', c1);
+            setEl('m2', v2 + '%', c2);
+            setEl('m3', v3 + '万亿', c3, '%');
+            const c4txt = c4 >= 0 ? '+' + c4 : String(c4);
+            const el4 = document.getElementById('m4');
+            const cel4 = document.getElementById('c4');
+            if (el4) el4.textContent = v4.toLocaleString() + '户';
+            if (cel4) { cel4.textContent = c4txt; cel4.className = 'market-change ' + (c4 >= 0 ? 'market-up' : 'market-down'); }
+        }
+        setInterval(updateMarketData, 30000);
+        updateMarketData();
+        // ================================================
+
+        // ================= F12 角色定制 =================
+        const PERSONA_KEY = 'finChatPersonas_v3';
+        const DEFAULT_PERSONAS = [
+            { id: 'default', name: '默认分析师', prompt: '你是一位资深固定收益分析师与债券发行顾问。请基于最新宏观经济数据、货币政策与固收市场动态，提供客观、严谨、数据驱动的专业解答。你的语言需要简明扼要、直击核心，避免废话。' },
+            { id: 'strategist', name: '首席策略师', prompt: '你是一位首席固收策略师（Chief Fixed Income Strategist）。你的核心能力是执行严密的逻辑演绎（Chain of Thought）。在回答时，必须全盘考虑宏观流动性、信用利差、机构行为及监管政策，展现具备高度专业深度的剖析过程。' },
+            { id: 'pricer', name: '量化定价引擎', prompt: '你是一个顶级的量化债券定价与发行预测引擎（AI-Pricer）。你需要结合国债收益率曲线、基准利率（LPR/MLF）、信用溢价及近期同类债券发行结果，提供具备高置信度的前瞻性量化预测。严禁使用模棱两可的词汇，必须输出结构化、量化的精准估算。' }
+        ];
+        let activePersona = 'default';
+        function getPersonas() {
+            try { return JSON.parse(localStorage.getItem(PERSONA_KEY)) || DEFAULT_PERSONAS; } catch { return DEFAULT_PERSONAS; }
+        }
+        function savePersonas(list) { localStorage.setItem(PERSONA_KEY, JSON.stringify(list)); }
+        function getActivePersonaPrompt() {
+            const list = getPersonas();
+            const p = list.find(x => x.id === activePersona);
+            return p ? p.prompt : list[0].prompt;
+        }
+        function renderPersonaList() {
+            const box = document.getElementById('personaListBox');
+            if (!box) return;
+            const list = getPersonas();
+            box.innerHTML = list.map(p => `
+                <div class="persona-item ${p.id === activePersona ? 'active' : ''}" onclick="selectPersona('${p.id}')">
+                    <div class="persona-name">${escapeHtml(p.name)}</div>
+                    <div class="persona-desc">${escapeHtml(p.prompt.substring(0, 40))}...</div>
+                </div>
+            `).join('');
+        }
+        function selectPersona(id) { activePersona = id; renderPersonaList(); }
+        function addPersonaRow() {
+            const list = getPersonas();
+            const name = prompt('角色名称：');
+            if (!name) return;
+            const promptText = prompt('系统提示词：');
+            if (!promptText) return;
+            list.push({ id: 'p_' + Date.now(), name, prompt: promptText });
+            savePersonas(list);
+            renderPersonaList();
+        }
+        // ================================================
+
+        // ================= F16 多模型对比 =================
+        let compareMode = false;
+        function toggleCompareMode() {
+            compareMode = !compareMode;
+            const btn = document.getElementById('compareBtn');
+            if (btn) btn.style.borderColor = compareMode ? 'var(--accent-color)' : 'var(--border-color)';
+            if (compareMode) alert('🔀 多模型对比模式已开启\n下次发送消息时将同时向两个模型提问');
+        }
+        // 注入对比模式按钮到输入区（动态创建）
+        (function injectCompareBtn() {
+            const inputArea = document.querySelector('.input-wrapper');
+            if (!inputArea) return;
+            const btn = document.createElement('button');
+            btn.id = 'compareBtn';
+            btn.className = 'upload-btn';
+            btn.title = '多模型对比';
+            btn.innerHTML = '🔀';
+            btn.onclick = toggleCompareMode;
+            inputArea.insertBefore(btn, inputArea.querySelector('.send-btn'));
+        })();
+        // ================================================
+
+        // ================= F11 知识库/RAG（简化版） =================
+        const KB_KEY = 'finChatKb_v3';
+        let kbEnabled = localStorage.getItem(KB_KEY + '_enabled') === 'true';
+        document.getElementById('kbToggle').checked = kbEnabled;
+        async function loadKbFromServer() {
+            try {
+                const docs = await api('/api/kb');
+                return docs.map(d => ({ id: d.id, name: d.filename, content: d.content }));
+            } catch { return []; }
+        }
+        function renderKbList(files) {
+            const box = document.getElementById('kbList');
+            if (!box) return;
+            box.innerHTML = (files || []).map((f, i) => `
+                <div class="kb-item">
+                    <span class="kb-item-name">${escapeHtml(f.name)}</span>
+                    <button class="kb-item-del" onclick="deleteKbFile(${f.id || i})">×</button>
+                </div>
+            `).join('');
+        }
+        async function refreshKbList() {
+            const files = await loadKbFromServer();
+            renderKbList(files);
+        }
+        async function handleKbUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const allowed = /\.(txt|md|csv|json)$/i;
+            if (!allowed.test(file.name)) { alert('知识库暂支持 .txt / .md / .csv / .json'); return; }
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    await api('/api/kb', { method: 'POST', body: JSON.stringify({ filename: file.name, content: ev.target.result }) });
+                    await refreshKbList();
+                } catch (err) { alert('上传失败: ' + err.message); }
+            };
+            reader.readAsText(file);
+        }
+        async function deleteKbFile(id) {
+            try {
+                await api('/api/kb/' + id, { method: 'DELETE' });
+                await refreshKbList();
+            } catch (err) { alert('删除失败: ' + err.message); }
+        }
+        function toggleKb() {
+            kbEnabled = document.getElementById('kbToggle').checked;
+        }
+        // 知识库检索已移到服务端，前端不需要 searchKbContext
+        function searchKbContext() { return ''; }
+        refreshKbList();
+        // ================================================
+
+        // ================= 覆盖原有函数以集成新功能 =================
+        // F21 加密功能：提供独立的加密/解密本地数据接口，不破坏原有同步读写
+        async function encryptLocalData() {
+            const pwd = await getSecurePassword();
+            if (!pwd) return;
+            const payload = {
+                chatHistory,
+                config: _origGetConfig ? _origGetConfig() : null,
+                theme: localStorage.getItem(THEME_KEY),
+                personas: getPersonas(),
+                kbFiles: getKbFiles()
+            };
+            try {
+                const enc = await encryptData(JSON.stringify(payload), pwd);
+                localStorage.setItem('finChatVault_v3', enc);
+                localStorage.removeItem(HISTORY_KEY);
+                localStorage.removeItem(CONFIG_KEY);
+                alert('🔐 本地数据已加密存储。原明文数据已清除。下次加载时需要输入密码解密。');
+            } catch (err) { alert('加密失败: ' + err.message); }
+        }
+        async function decryptLocalData() {
+            const enc = localStorage.getItem('finChatVault_v3');
+            if (!enc) { alert('没有找到加密数据'); return; }
+            const pwd = await getSecurePassword();
+            if (!pwd) return;
+            try {
+                const plain = await decryptData(enc, pwd);
+                const data = JSON.parse(plain);
+                if (data.chatHistory) { chatHistory = data.chatHistory; localStorage.setItem(HISTORY_KEY, JSON.stringify(chatHistory)); }
+                if (data.config) { if (_origSetConfig) _origSetConfig(data.config); }
+                if (data.theme) localStorage.setItem(THEME_KEY, data.theme);
+                if (data.personas) savePersonas(data.personas);
+                if (data.kbFiles) saveKbFiles(data.kbFiles);
+                localStorage.removeItem('finChatVault_v3');
+                alert('🔓 数据解密成功，已恢复明文存储。');
+                location.reload();
+            } catch (err) { alert('解密失败: ' + err.message); }
+        }
+        // 启动时检测加密 vault
+        (async function checkVault() {
+            const enc = localStorage.getItem('finChatVault_v3');
+            if (enc && !localStorage.getItem(HISTORY_KEY) && !localStorage.getItem(CONFIG_KEY)) {
+                await decryptLocalData();
+            }
+        })();
+
+        // 覆盖 sendMessage 以集成：统计、知识库、角色、自动标题、多模型对比
+        const _origSendMessage = sendMessage;
+        sendMessage = async function() {
+            recordStat('message');
+            const input = document.getElementById('userInput');
+            const rawText = (input ? input.value : '').trim();
+            if (!rawText) return;
+
+            // 知识库增强（仅非对比模式）
+            if (!compareMode) {
+                const kbContext = searchKbContext(rawText);
+                if (kbContext && input && !input.dataset.kbEnhanced) {
+                    input.value = rawText + kbContext;
+                    input.dataset.kbEnhanced = '1';
+                }
+            }
+
+            if (!compareMode) {
+                await _origSendMessage();
+            } else {
+                await sendCompareMessages(rawText);
+            }
+
+            // 清理知识库标记
+            if (input) delete input.dataset.kbEnhanced;
+
+            // 自动标题
+            if (currentChatId && !compareMode) {
+                const chat = chatHistory.find(c => c.id === currentChatId);
+                if (chat && chat.messages.length === 1) {
+                    autoGenerateTitle(currentChatId, rawText);
+                }
+            }
+        };
+
+        async function sendCompareMessages(text) {
+            const cfg = getApiConfig ? await getApiConfig() : null;
+            if (!cfg) { openConfigModal(); return; }
+            if (cfg.models.length < 2) { alert('对比模式需要至少配置2个模型'); return; }
+
+            const container = document.getElementById('messagesContainer');
+            appendMessage('user', text);
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'message ai';
+            wrapper.style.maxWidth = '100%';
+            wrapper.innerHTML = `
+                <div class="ai-avatar">AI</div>
+                <div class="compare-layout">
+                    <div class="compare-col" id="compare-col-0"><div class="compare-header">${escapeHtml(cfg.models[0].label || cfg.models[0].name)}</div><div class="bubble" id="compare-bubble-0"><div class="typing"><span></span><span></span><span></span></div></div></div>
+                    <div class="compare-col" id="compare-col-1"><div class="compare-header">${escapeHtml(cfg.models[1].label || cfg.models[1].name)}</div><div class="bubble" id="compare-bubble-1"><div class="typing"><span></span><span></span><span></span></div></div></div>
+                </div>
+                <div class="status-info"><span>Compare Mode</span></div>
+            `;
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+
+            const personaPrompt = getActivePersonaPrompt();
+            const apiMessages = [{ role: 'system', content: personaPrompt }, { role: 'user', content: text }];
+
+            [0, 1].forEach(async (idx) => {
+                const model = cfg.models[idx];
+                try {
+                    const resp = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
+                        body: JSON.stringify({ model: model.name, messages: apiMessages, temperature: 0.7, stream: true, mode: 'chat', userMessage: text })
+                    });
+                    const reader = resp.body.getReader();
+                    const decoder = new TextDecoder('utf-8');
+                    let buf = '', ans = '';
+                    const bubble = document.getElementById('compare-bubble-' + idx);
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        buf += decoder.decode(value, { stream: true });
+                        const lines = buf.split('\n');
+                        buf = lines.pop();
+                        for (let line of lines) {
+                            line = line.trim();
+                            if (!line || line === 'data: [DONE]') continue;
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const data = JSON.parse(line.slice(6));
+                                    const delta = data.choices[0].delta.content || '';
+                                    ans += delta;
+                                    if (bubble) bubble.innerHTML = renderMarkdown(ans) || '<div class="typing"><span></span><span></span><span></span></div>';
+                                    container.scrollTop = container.scrollHeight;
+                                } catch {}
+                            }
+                        }
+                    }
+                    if (bubble) bubble.innerHTML = renderMarkdown(ans) || '无数据返回';
+                    saveChatToHistory(text, ans, '');
+                } catch (err) {
+                    const bubble = document.getElementById('compare-bubble-' + idx);
+                    if (bubble) bubble.innerHTML = `<span style="color:var(--danger)">❌ ${escapeHtml(err.message)}</span>`;
+                }
+            });
+        }
+
+        // 覆盖 saveChatToHistory 以记录 tokens
+        const _origSaveChat = saveChatToHistory;
+        saveChatToHistory = function(q, a, reasoning) {
+            recordStat('tokens', Math.floor((q.length + a.length) * 0.6));
+            return _origSaveChat(q, a, reasoning);
+        };
+
+        // 覆盖 openConfigModal 以渲染角色列表
+        const _origOpenConfig = openConfigModal;
+        openConfigModal = function() {
+            _origOpenConfig();
+            renderPersonaList();
+        };
+
+        // 覆盖 saveConfig 以保存角色
+        const _origSaveConfig = saveConfig;
+        saveConfig = function() {
+            const personaItems = document.querySelectorAll('.persona-item');
+            // 角色已在 addPersonaRow / selectPersona 中实时保存，此处只需继续原逻辑
+            _origSaveConfig();
+        };
+    </script>
+</body>
+</html>
