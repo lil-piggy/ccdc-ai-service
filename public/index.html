@@ -98,19 +98,32 @@
         .brand-logo {
             width: 140px;
             height: auto;
-            transition: 0.3s;
-            border-radius: 8px;
-            padding: 8px;
-            background: rgba(255,255,255,0.06);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            border-radius: 50%;
+            padding: 4px;
+            background: linear-gradient(135deg, rgba(0,229,255,0.2), rgba(255,0,128,0.2));
+            box-shadow: 0 0 15px rgba(0,229,255,0.3);
+            animation: disco-bounce 1.2s ease-in-out infinite, disco-glow 2s ease-in-out infinite;
+            cursor: pointer;
         }
         .brand-logo:hover {
-            transform: scale(1.03);
-            box-shadow: 0 6px 30px rgba(0,0,0,0.3), 0 0 15px rgba(0,229,255,0.1);
+            animation: disco-bounce 0.6s ease-in-out infinite, disco-glow 1s ease-in-out infinite;
+            filter: brightness(1.2);
         }
         body.theme-light .brand-logo {
-            background: rgba(0,0,0,0.03);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            background: linear-gradient(135deg, rgba(0,229,255,0.15), rgba(255,0,128,0.15));
+            box-shadow: 0 0 15px rgba(0,229,255,0.15);
+        }
+        @keyframes disco-bounce {
+            0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+            20% { transform: translateY(-12px) scale(1.08) rotate(-5deg); }
+            40% { transform: translateY(0) scale(0.95) rotate(0deg); }
+            60% { transform: translateY(-8px) scale(1.05) rotate(4deg); }
+            80% { transform: translateY(0) scale(1) rotate(0deg); }
+        }
+        @keyframes disco-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(0,229,255,0.4), 0 0 30px rgba(0,229,255,0.1); border-color: rgba(0,229,255,0.5); }
+            33% { box-shadow: 0 0 20px rgba(255,0,128,0.5), 0 0 40px rgba(255,0,128,0.2); border-color: rgba(255,0,128,0.5); }
+            66% { box-shadow: 0 0 20px rgba(0,255,136,0.5), 0 0 40px rgba(0,255,136,0.2); border-color: rgba(0,255,136,0.5); }
         }
         .brand-tagline {
             font-family: var(--font-tech);
@@ -2929,5 +2942,67 @@
             _origSaveConfig();
         };
     </script>
+    <!-- Prod By FF 知识产权署名 -->
+    <div class="ff-watermark" title="Prod By FF | CCDC AI Service">
+        <span class="ff-icon">&#169;</span>
+        <span class="ff-text">Prod By <b>FF</b></span>
+    </div>
+    <style>
+        .ff-watermark {
+            position: fixed;
+            bottom: 12px;
+            right: 16px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0,229,255,0.25);
+            border-radius: 20px;
+            font-family: var(--font-tech), 'Courier New', monospace;
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px rgba(0,229,255,0.3);
+            pointer-events: auto;
+            cursor: default;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        .ff-watermark:hover {
+            background: rgba(0,0,0,0.7);
+            border-color: rgba(0,229,255,0.6);
+            color: rgba(255,255,255,0.95);
+            box-shadow: 0 0 20px rgba(0,229,255,0.2);
+            transform: translateY(-2px);
+        }
+        .ff-watermark .ff-icon {
+            font-size: 13px;
+            color: var(--accent-color);
+            animation: ff-pulse 2s ease-in-out infinite;
+        }
+        .ff-watermark .ff-text b {
+            color: var(--accent-color);
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        @keyframes ff-pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        body.theme-light .ff-watermark {
+            background: rgba(255,255,255,0.6);
+            border-color: rgba(0,229,255,0.2);
+            color: rgba(0,0,0,0.6);
+            text-shadow: none;
+        }
+        body.theme-light .ff-watermark:hover {
+            background: rgba(255,255,255,0.85);
+            border-color: rgba(0,229,255,0.5);
+            color: rgba(0,0,0,0.9);
+        }
+    </style>
 </body>
 </html>
