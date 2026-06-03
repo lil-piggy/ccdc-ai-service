@@ -6,12 +6,20 @@ services:
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
+    disk:
+      name: ccdc-data
+      mountPath: /var/lib/ccdc
+      sizeGB: 0.5
     envVars:
       - key: NODE_ENV
         value: production
+      - key: DB_PATH
+        value: /var/lib/ccdc/data.sqlite
       - key: JWT_SECRET
-        generateValue: true
+        sync: false
       - key: ADMIN_API_URL
         sync: false
       - key: ADMIN_API_KEY
+        sync: false
+      - key: ADMIN_API_MODELS
         sync: false

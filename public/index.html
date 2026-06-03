@@ -1491,6 +1491,10 @@
                 <label>密码</label>
                 <input type="password" id="authPassword" placeholder="请输入密码（至少6位）">
             </div>
+            <div class="form-group" id="confirmPasswordGroup" style="display:none;">
+                <label>确认密码</label>
+                <input type="password" id="authPasswordConfirm" placeholder="请再次输入密码">
+            </div>
             <div class="hint warning" id="authError" style="display:none;margin-bottom:10px;"></div>
             <div class="modal-actions">
                 <button class="modal-btn secondary" onclick="handleRegister()">注册</button>
@@ -1583,8 +1587,8 @@
             await initApp();
         }
 
-        async function register(username, password) {
-            const data = await api('/api/auth/register', { method: 'POST', body: JSON.stringify({ username, password }) });
+        async function register(username, password, passwordConfirm) {
+            const data = await api('/api/auth/register', { method: 'POST', body: JSON.stringify({ username, password, passwordConfirm }) });
             authToken = data.token;
             reqUsername = data.username;
             localStorage.setItem('ccdc_auth_token', authToken);
@@ -1937,7 +1941,10 @@
             if (cfg && cfg.models) {
                 renderModelList(cfg.models);
             } else {
-                renderModelList([{ name: 'kimi-k2.6', label: 'Kimi K2.6' }]);
+                renderModelList([
+                    { name: 'kimi-k2.6', label: 'Kimi K2.6' },
+                    { name: 'deepseek-v4-pro', label: 'DeepSeek V4 Pro' }
+                ]);
             }
             document.getElementById('configModal').classList.add('active');
         }
@@ -2028,13 +2035,26 @@
         async function handleRegister() {
             const u = document.getElementById('authUsername').value.trim();
             const p = document.getElementById('authPassword').value;
+            const pcGroup = document.getElementById('confirmPasswordGroup');
+            const pc = document.getElementById('authPasswordConfirm').value;
             const errEl = document.getElementById('authError');
             if (!u || !p) { errEl.textContent = '请填写用户名和密码'; errEl.style.display = 'block'; return; }
             if (u.length < 3) { errEl.textContent = '用户名至少3位'; errEl.style.display = 'block'; return; }
             if (p.length < 6) { errEl.textContent = '密码至少6位'; errEl.style.display = 'block'; return; }
+            // 如果确认密码框未显示，先显示它
+            if (pcGroup.style.display === 'none') {
+                pcGroup.style.display = 'block';
+                errEl.textContent = '请再次输入密码确认';
+                errEl.style.display = 'block';
+                document.getElementById('authPasswordConfirm').focus();
+                return;
+            }
+            if (p !== pc) { errEl.textContent = '两次输入的密码不一致'; errEl.style.display = 'block'; return; }
             try {
-                await register(u, p);
+                await register(u, p, pc);
                 errEl.style.display = 'none';
+                pcGroup.style.display = 'none';
+                document.getElementById('authPasswordConfirm').value = '';
             } catch (e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
         }
 

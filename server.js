@@ -13,8 +13,40 @@ const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-change-me';
 // Admin API config (统一配置)
 const ADMIN_API_URL = process.env.ADMIN_API_URL || '';
 const ADMIN_API_KEY = process.env.ADMIN_API_KEY || '';
-const ADMIN_API_MODEL = process.env.ADMIN_API_MODEL || 'kimi-k2.6';
-const ADMIN_MODEL_LABEL = process.env.ADMIN_MODEL_LABEL || '默认模型';
+
+// 支持多模型配置：环境变量 ADMIN_API_MODELS 格式为 model1|label1,model2|label2
+// 例如：kimi-k2.6|Kimi K2.6,deepseek-v4-pro|DeepSeek V4 Pro
+function parseAdminModels() {
+  const modelsEnv = process.env.ADMIN_API_MODELS;
+  if (modelsEnv) {
+    return modelsEnv.split(',').map(pair => {
+      const parts = pair.split('|');
+      return {
+        name: parts[0].trim(),
+        label: parts[1] ? parts[1].trim() : parts[0].trim()
+      };
+    }).filter(m => m.name);
+  }
+  // 兼容旧版单模型配置，并自动追加 deepseek-v4-pro 作为第二个默认模型
+  const models = [];
+  if (process.env.ADMIN_API_MODEL) {
+    models.push({
+      name: process.env.ADMIN_API_MODEL,
+      label: process.env.ADMIN_MODEL_LABEL || process.env.ADMIN_API_MODEL
+    });
+  } else {
+    models.push({ name: 'kimi-k2.6', label: 'Kimi K2.6' });
+  }
+  // 确保默认包含 deepseek-v4-pro
+  if (!models.find(m => m.name === 'deepseek-v4-pro')) {
+    models.push({ name: 'deepseek-v4-pro', label: 'DeepSeek V4 Pro' });
+  }
+  return models;
+}
+
+const ADMIN_MODELS = parseAdminModels();
+const ADMIN_API_MODEL = ADMIN_MODELS[0]?.name || 'kimi-k2.6';
+const ADMIN_MODEL_LABEL = ADMIN_MODELS[0]?.label || 'Kimi K2.6';
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -44,9 +76,12 @@ app.get('/api/health', (req, res) => {
 
 // Register
 app.post('/api/auth/register', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, passwordConfirm } = req.body;
   if (!username || !password || username.length < 3 || password.length < 6) {
     return res.status(400).json({ error: '用户名至少3位，密码至少6位' });
+  }
+  if (password !== passwordConfirm) {
+    return res.status(400).json({ error: '两次输入的密码不一致' });
   }
   const existing = db.getUserByUsername(username);
   if (existing) {
@@ -118,10 +153,10 @@ app.delete('/api/history/:id', authMiddleware, (req, res) => {
 app.get('/api/config', authMiddleware, (req, res) => {
   const cfg = db.getConfigByUser(req.userId);
   if (!cfg) {
-    // Return default config with admin model
+    // Return default config with admin models
     return res.json({
       url: ADMIN_API_URL,
-      models: [{ name: ADMIN_API_MODEL, label: ADMIN_MODEL_LABEL }],
+      models: ADMIN_MODELS,
       activeModelIndex: 0,
       theme: 'dark',
       personas: []
@@ -130,7 +165,7 @@ app.get('/api/config', authMiddleware, (req, res) => {
   res.json({
     url: cfg.api_url || ADMIN_API_URL,
     key: cfg.api_key || '',
-    models: cfg.models ? JSON.parse(cfg.models) : [{ name: ADMIN_API_MODEL, label: ADMIN_MODEL_LABEL }],
+    models: cfg.models ? JSON.parse(cfg.models) : ADMIN_MODELS,
     activeModelIndex: cfg.active_model_index || 0,
     theme: cfg.theme || 'dark',
     personas: cfg.personas ? JSON.parse(cfg.personas) : []
@@ -256,7 +291,7 @@ async function start() {
   await db.initDb();
   app.listen(PORT, () => {
     console.log(`CCDC AI Service running on port ${PORT}`);
-    console.log(`Admin API Model: ${ADMIN_API_MODEL}`);
+    console.log(`Admin API Models: ${ADMIN_MODELS.map(m => m.label).join(', ')}`);
   });
 }
 start();
