@@ -158,7 +158,7 @@ app.get('/api/config', authMiddleware, async (req, res) => {
       url: ADMIN_API_URL,
       models: ADMIN_MODELS,
       activeModelIndex: 0,
-      theme: 'dark',
+      theme: 'light',
       personas: []
     });
   }
@@ -167,7 +167,7 @@ app.get('/api/config', authMiddleware, async (req, res) => {
     key: cfg.api_key || '',
     models: cfg.models ? JSON.parse(cfg.models) : ADMIN_MODELS,
     activeModelIndex: cfg.active_model_index || 0,
-    theme: cfg.theme || 'dark',
+    theme: cfg.theme || 'light',
     personas: cfg.personas ? JSON.parse(cfg.personas) : []
   });
 });
