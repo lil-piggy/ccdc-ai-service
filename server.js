@@ -211,10 +211,24 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
   try {
     const kbDocs = await db.getKbDocsByUser(req.userId);
     if (kbDocs && kbDocs.length > 0 && userMessage) {
-      const qWords = userMessage.split(/\s+/).filter(w => w.length > 1);
+      // 提取关键词：英文按单词(2字母+)，中文按单个汉字
+      function extractKeywords(text) {
+        const words = [];
+        // 英文单词
+        const enWords = text.match(/[a-zA-Z]{2,}/g) || [];
+        words.push(...enWords.map(w => w.toLowerCase()));
+        // 中文字符（逐字匹配，过滤常见虚词）
+        const stopChars = new Set('的了是在和与或及等为有这那它个上下中来去到从向把被让给对由于因为所以因此如果即使虽然但是然而而且并且或者还是要么不仅不但与其不如无论不管只要只有除非除了除去有关相关涉及包括包含还有另外此外其余其他从而进而于是然后接着随后最后最终总之总而言之综上所述由此看来由此可见也就是说换言之换句话说即也就是即指所谓的所谓例如比如譬如诸如像好像如同类似相似相同相反不同区别差异变化改变');
+        const cnChars = text.match(/[\u4e00-\u9fa5]/g) || [];
+        words.push(...cnChars.filter(c => !stopChars.has(c)));
+        return words;
+      }
+      const qWords = extractKeywords(userMessage);
+      console.log('[KB] Keywords extracted:', qWords.slice(0, 20));
       const segments = [];
       kbDocs.forEach(doc => {
-        const chunks = doc.content.split(/[\n。！？]/).filter(s => s.trim().length > 10);
+        // 按段落/句子拆分，保留更短的片段(>5字)
+        const chunks = doc.content.split(/[\n。！？;；]/).filter(s => s.trim().length > 5);
         chunks.forEach(chunk => {
           let score = 0;
           qWords.forEach(w => { if (chunk.includes(w)) score += 1; });
@@ -223,6 +237,7 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
       });
       segments.sort((a, b) => b.score - a.score);
       const top = segments.slice(0, 3);
+      console.log('[KB] Matched segments:', top.length, top.map(s => ({ source: s.source, score: s.score })));
       if (top.length) {
         kbContext = '\n\n【知识库参考】\n' + top.map((s, i) => `[${i+1}] ${s.text} (来源: ${s.source})`).join('\n') + '\n';
       }
