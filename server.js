@@ -83,12 +83,12 @@ app.post('/api/auth/register', async (req, res) => {
   if (password !== passwordConfirm) {
     return res.status(400).json({ error: '两次输入的密码不一致' });
   }
-  const existing = db.getUserByUsername(username);
+  const existing = await db.getUserByUsername(username);
   if (existing) {
     return res.status(409).json({ error: '用户名已存在' });
   }
   const hash = await bcrypt.hash(password, 10);
-  const result = db.createUser(username, hash);
+  const result = await db.createUser(username, hash);
   const token = jwt.sign({ userId: result.lastInsertRowid, username }, JWT_SECRET, { expiresIn: '7d' });
   res.json({ token, username });
 });
@@ -96,7 +96,7 @@ app.post('/api/auth/register', async (req, res) => {
 // Login
 app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = db.getUserByUsername(username);
+  const user = await db.getUserByUsername(username);
   if (!user || !(await bcrypt.compare(password, user.password_hash))) {
     return res.status(401).json({ error: '用户名或密码错误' });
   }
@@ -105,15 +105,15 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Me
-app.get('/api/auth/me', authMiddleware, (req, res) => {
-  const user = db.getUserById(req.userId);
+app.get('/api/auth/me', authMiddleware, async (req, res) => {
+  const user = await db.getUserById(req.userId);
   if (!user) return res.status(404).json({ error: '用户不存在' });
   res.json(user);
 });
 
 // Get history
-app.get('/api/history', authMiddleware, (req, res) => {
-  const rows = db.getChatsByUser(req.userId);
+app.get('/api/history', authMiddleware, async (req, res) => {
+  const rows = await db.getChatsByUser(req.userId);
   const chats = rows.map(r => ({
     id: r.id,
     title: r.title,
@@ -126,32 +126,32 @@ app.get('/api/history', authMiddleware, (req, res) => {
 });
 
 // Save history (upsert)
-app.post('/api/history', authMiddleware, (req, res) => {
+app.post('/api/history', authMiddleware, async (req, res) => {
   const { id, title, messages, pinned } = req.body;
   if (!Array.isArray(messages)) {
     return res.status(400).json({ error: 'messages 必须是数组' });
   }
   if (id) {
-    const existing = db.getChatById(id, req.userId);
+    const existing = await db.getChatById(id, req.userId);
     if (existing) {
-      db.updateChat(id, req.userId, title, messages);
-      if (typeof pinned === 'boolean') db.togglePinChat(id, req.userId, pinned);
+      await db.updateChat(id, req.userId, title, messages);
+      if (typeof pinned === 'boolean') await db.togglePinChat(id, req.userId, pinned);
       return res.json({ id });
     }
   }
-  const result = db.createChat(req.userId, title, messages);
+  const result = await db.createChat(req.userId, title, messages);
   res.json({ id: result.lastInsertRowid });
 });
 
 // Delete history
-app.delete('/api/history/:id', authMiddleware, (req, res) => {
-  db.deleteChat(req.params.id, req.userId);
+app.delete('/api/history/:id', authMiddleware, async (req, res) => {
+  await db.deleteChat(req.params.id, req.userId);
   res.json({ ok: true });
 });
 
 // Get config
-app.get('/api/config', authMiddleware, (req, res) => {
-  const cfg = db.getConfigByUser(req.userId);
+app.get('/api/config', authMiddleware, async (req, res) => {
+  const cfg = await db.getConfigByUser(req.userId);
   if (!cfg) {
     // Return default config with admin models
     return res.json({
@@ -173,28 +173,28 @@ app.get('/api/config', authMiddleware, (req, res) => {
 });
 
 // Save config
-app.post('/api/config', authMiddleware, (req, res) => {
-  db.setConfig(req.userId, req.body);
+app.post('/api/config', authMiddleware, async (req, res) => {
+  await db.setConfig(req.userId, req.body);
   res.json({ ok: true });
 });
 
 // KB upload
-app.post('/api/kb', authMiddleware, (req, res) => {
+app.post('/api/kb', authMiddleware, async (req, res) => {
   const { filename, content } = req.body;
   if (!filename || !content) return res.status(400).json({ error: '缺少文件名或内容' });
-  const result = db.createKbDoc(req.userId, filename, content);
+  const result = await db.createKbDoc(req.userId, filename, content);
   res.json({ id: result.lastInsertRowid });
 });
 
 // KB list
-app.get('/api/kb', authMiddleware, (req, res) => {
-  const docs = db.getKbDocsByUser(req.userId);
+app.get('/api/kb', authMiddleware, async (req, res) => {
+  const docs = await db.getKbDocsByUser(req.userId);
   res.json(docs);
 });
 
 // KB delete
-app.delete('/api/kb/:id', authMiddleware, (req, res) => {
-  db.deleteKbDoc(req.params.id, req.userId);
+app.delete('/api/kb/:id', authMiddleware, async (req, res) => {
+  await db.deleteKbDoc(req.params.id, req.userId);
   res.json({ ok: true });
 });
 
@@ -209,7 +209,7 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
   // Knowledge base retrieval
   let kbContext = '';
   try {
-    const kbDocs = db.getKbDocsByUser(req.userId);
+    const kbDocs = await db.getKbDocsByUser(req.userId);
     if (kbDocs && kbDocs.length > 0 && userMessage) {
       const qWords = userMessage.split(/\s+/).filter(w => w.length > 1);
       const segments = [];
@@ -290,8 +290,12 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
 async function start() {
   await db.initDb();
   app.listen(PORT, () => {
+    console.log('========================================');
     console.log(`CCDC AI Service running on port ${PORT}`);
     console.log(`Admin API Models: ${ADMIN_MODELS.map(m => m.label).join(', ')}`);
+    console.log(`DATABASE_URL set: ${process.env.DATABASE_URL ? 'Yes' : 'NO!'}`);
+    console.log(`JWT_SECRET set: ${process.env.JWT_SECRET ? 'Yes (first 4 chars: ' + process.env.JWT_SECRET.slice(0,4) + '...)' : 'NO - USING DEFAULT!'}`);
+    console.log('========================================');
   });
 }
 start();

@@ -1,198 +1,172 @@
-const initSqlJs = require('sql.js');
-const fs = require('fs');
-const path = require('path');
+const { Pool } = require('pg');
 
-const dbPath = process.env.DB_PATH || path.join(__dirname, 'data.sqlite');
-
-let SQL, db;
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL?.includes('render.com') ? { rejectUnauthorized: false } : false
+});
 
 async function initDb() {
-  SQL = await initSqlJs();
-  if (fs.existsSync(dbPath)) {
-    const filebuffer = fs.readFileSync(dbPath);
-    db = new SQL.Database(filebuffer);
-  } else {
-    db = new SQL.Database();
-  }
-  initTables();
-}
-
-function saveDb() {
+  console.log('[DB] Connecting to PostgreSQL...');
+  const client = await pool.connect();
   try {
-    const data = db.export();
-    fs.writeFileSync(dbPath, Buffer.from(data));
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS chats (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        title TEXT,
+        messages TEXT NOT NULL,
+        pinned INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS configs (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER UNIQUE NOT NULL,
+        api_url TEXT,
+        api_key TEXT,
+        models TEXT,
+        active_model_index INTEGER DEFAULT 0,
+        theme TEXT DEFAULT 'dark',
+        personas TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS kb_docs (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        filename TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('[DB] PostgreSQL tables initialized successfully.');
   } catch (err) {
-    console.error('DB save error:', err);
+    console.error('[DB] Init error:', err.message);
+    throw err;
+  } finally {
+    client.release();
   }
-}
-
-function run(sql, params = []) {
-  const stmt = db.prepare(sql);
-  stmt.bind(params);
-  stmt.step();
-  stmt.free();
-  const idRow = getOne('SELECT last_insert_rowid() as id');
-  saveDb();
-  return { lastID: idRow ? idRow.id : null };
-}
-
-function getOne(sql, params = []) {
-  const stmt = db.prepare(sql);
-  stmt.bind(params);
-  const result = stmt.step() ? stmt.getAsObject() : null;
-  stmt.free();
-  return result;
-}
-
-function getAll(sql, params = []) {
-  const stmt = db.prepare(sql);
-  stmt.bind(params);
-  const results = [];
-  while (stmt.step()) {
-    results.push(stmt.getAsObject());
-  }
-  stmt.free();
-  return results;
-}
-
-function lastId() {
-  const row = getOne('SELECT last_insert_rowid() as id');
-  return row ? row.id : null;
-}
-
-function initTables() {
-  run(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );`);
-
-  run(`CREATE TABLE IF NOT EXISTS chats (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    title TEXT,
-    messages TEXT NOT NULL,
-    pinned INTEGER DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );`);
-
-  run(`CREATE TABLE IF NOT EXISTS configs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER UNIQUE NOT NULL,
-    api_url TEXT,
-    api_key TEXT,
-    models TEXT,
-    active_model_index INTEGER DEFAULT 0,
-    theme TEXT DEFAULT 'dark',
-    personas TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );`);
-
-  run(`CREATE TABLE IF NOT EXISTS kb_docs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    filename TEXT NOT NULL,
-    content TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );`);
 }
 
 // Users
-function createUser(username, passwordHash) {
-  const result = run('INSERT INTO users (username, password_hash) VALUES (?, ?)', [username, passwordHash]);
-  return { lastInsertRowid: result.lastID };
+async function createUser(username, passwordHash) {
+  const result = await pool.query(
+    'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id',
+    [username, passwordHash]
+  );
+  return { lastInsertRowid: result.rows[0].id };
 }
 
-function getUserByUsername(username) {
-  return getOne('SELECT * FROM users WHERE username = ?', [username]);
+async function getUserByUsername(username) {
+  const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+  return result.rows[0] || null;
 }
 
-function getUserById(id) {
-  return getOne('SELECT id, username, created_at FROM users WHERE id = ?', [id]);
+async function getUserById(id) {
+  const result = await pool.query('SELECT id, username, created_at FROM users WHERE id = $1', [id]);
+  return result.rows[0] || null;
 }
 
 // Chats
-function getChatsByUser(userId) {
-  return getAll(
-    'SELECT id, user_id, title, messages, pinned, created_at, updated_at FROM chats WHERE user_id = ? ORDER BY pinned DESC, updated_at DESC',
+async function getChatsByUser(userId) {
+  const result = await pool.query(
+    'SELECT id, user_id, title, messages, pinned, created_at, updated_at FROM chats WHERE user_id = $1 ORDER BY pinned DESC, updated_at DESC',
     [userId]
+  );
+  return result.rows;
+}
+
+async function getChatById(id, userId) {
+  const result = await pool.query('SELECT * FROM chats WHERE id = $1 AND user_id = $2', [id, userId]);
+  return result.rows[0] || null;
+}
+
+async function createChat(userId, title, messages) {
+  const result = await pool.query(
+    'INSERT INTO chats (user_id, title, messages) VALUES ($1, $2, $3) RETURNING id',
+    [userId, title, JSON.stringify(messages)]
+  );
+  return { lastInsertRowid: result.rows[0].id };
+}
+
+async function updateChat(id, userId, title, messages) {
+  await pool.query(
+    'UPDATE chats SET title = $1, messages = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 AND user_id = $4',
+    [title, JSON.stringify(messages), id, userId]
   );
 }
 
-function getChatById(id, userId) {
-  return getOne('SELECT * FROM chats WHERE id = ? AND user_id = ?', [id, userId]);
+async function deleteChat(id, userId) {
+  await pool.query('DELETE FROM chats WHERE id = $1 AND user_id = $2', [id, userId]);
 }
 
-function createChat(userId, title, messages) {
-  const result = run('INSERT INTO chats (user_id, title, messages) VALUES (?, ?, ?)', [userId, title, JSON.stringify(messages)]);
-  return { lastInsertRowid: result.lastID };
-}
-
-function updateChat(id, userId, title, messages) {
-  run('UPDATE chats SET title = ?, messages = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [title, JSON.stringify(messages), id, userId]);
-}
-
-function deleteChat(id, userId) {
-  run('DELETE FROM chats WHERE id = ? AND user_id = ?', [id, userId]);
-}
-
-function togglePinChat(id, userId, pinned) {
-  run('UPDATE chats SET pinned = ? WHERE id = ? AND user_id = ?', [pinned ? 1 : 0, id, userId]);
+async function togglePinChat(id, userId, pinned) {
+  await pool.query('UPDATE chats SET pinned = $1 WHERE id = $2 AND user_id = $3', [pinned ? 1 : 0, id, userId]);
 }
 
 // Configs
-function getConfigByUser(userId) {
-  return getOne('SELECT * FROM configs WHERE user_id = ?', [userId]);
+async function getConfigByUser(userId) {
+  const result = await pool.query('SELECT * FROM configs WHERE user_id = $1', [userId]);
+  return result.rows[0] || null;
 }
 
-function setConfig(userId, cfg) {
-  const existing = getConfigByUser(userId);
-  if (existing) {
-    run(
-      'UPDATE configs SET api_url = ?, api_key = ?, models = ?, active_model_index = ?, theme = ?, personas = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-      [
-        cfg.api_url || null,
-        cfg.api_key || null,
-        cfg.models ? JSON.stringify(cfg.models) : null,
-        cfg.active_model_index ?? 0,
-        cfg.theme || 'dark',
-        cfg.personas ? JSON.stringify(cfg.personas) : null,
-        userId
-      ]
-    );
-    return existing.id;
-  } else {
-    run(
-      'INSERT INTO configs (user_id, api_url, api_key, models, active_model_index, theme, personas) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [
-        userId,
-        cfg.api_url || null,
-        cfg.api_key || null,
-        cfg.models ? JSON.stringify(cfg.models) : null,
-        cfg.active_model_index ?? 0,
-        cfg.theme || 'dark',
-        cfg.personas ? JSON.stringify(cfg.personas) : null
-      ]
-    );
-    return lastId();
-  }
+async function setConfig(userId, cfg) {
+  const result = await pool.query(
+    `INSERT INTO configs (user_id, api_url, api_key, models, active_model_index, theme, personas)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     ON CONFLICT (user_id) DO UPDATE SET
+       api_url = EXCLUDED.api_url,
+       api_key = EXCLUDED.api_key,
+       models = EXCLUDED.models,
+       active_model_index = EXCLUDED.active_model_index,
+       theme = EXCLUDED.theme,
+       personas = EXCLUDED.personas,
+       updated_at = CURRENT_TIMESTAMP
+     RETURNING id`,
+    [
+      userId,
+      cfg.api_url || null,
+      cfg.api_key || null,
+      cfg.models ? JSON.stringify(cfg.models) : null,
+      cfg.active_model_index ?? 0,
+      cfg.theme || 'dark',
+      cfg.personas ? JSON.stringify(cfg.personas) : null
+    ]
+  );
+  return result.rows[0].id;
 }
 
 // KB Docs
-function getKbDocsByUser(userId) {
-  return getAll('SELECT id, user_id, filename, content, created_at FROM kb_docs WHERE user_id = ? ORDER BY created_at DESC', [userId]);
+async function getKbDocsByUser(userId) {
+  const result = await pool.query(
+    'SELECT id, user_id, filename, content, created_at FROM kb_docs WHERE user_id = $1 ORDER BY created_at DESC',
+    [userId]
+  );
+  return result.rows;
 }
 
-function createKbDoc(userId, filename, content) {
-  const result = run('INSERT INTO kb_docs (user_id, filename, content) VALUES (?, ?, ?)', [userId, filename, content]);
-  return { lastInsertRowid: result.lastID };
+async function createKbDoc(userId, filename, content) {
+  const result = await pool.query(
+    'INSERT INTO kb_docs (user_id, filename, content) VALUES ($1, $2, $3) RETURNING id',
+    [userId, filename, content]
+  );
+  return { lastInsertRowid: result.rows[0].id };
 }
 
-function deleteKbDoc(id, userId) {
-  run('DELETE FROM kb_docs WHERE id = ? AND user_id = ?', [id, userId]);
+async function deleteKbDoc(id, userId) {
+  await pool.query('DELETE FROM kb_docs WHERE id = $1 AND user_id = $2', [id, userId]);
 }
 
 module.exports = {
