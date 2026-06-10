@@ -1368,6 +1368,189 @@
         body.theme-light .bond-codin-textarea { background: #f6f8fa; color: #1f2328; border-color: #d0d7de; }
         body.theme-light .bond-codin-textarea::placeholder { color: #8c959f; }
 
+        /* ===== Bond Codin 独立入口按钮 ===== */
+        .bond-codin-nav-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: linear-gradient(135deg, #7c4dff, #00e5ff);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-family: var(--font-tech);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .bond-codin-nav-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+            100% { transform: translateX(100%); }
+        }
+        .bond-codin-nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(124, 77, 255, 0.4);
+        }
+
+        /* ===== Bond Codin 独立面板 ===== */
+        .bond-codin-panel {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+        .bond-codin-panel.active {
+            display: flex;
+        }
+        .bond-codin-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: linear-gradient(90deg, #1a0a2e, #0f1525);
+            border-bottom: 1px solid rgba(124, 77, 255, 0.3);
+        }
+        .bond-codin-brand {
+            font-family: var(--font-tech);
+            font-size: 14px;
+            color: #bb86fc;
+            letter-spacing: 2px;
+        }
+        .bond-codin-brand span {
+            color: #03dac6;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+        .bond-codin-back-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(124, 77, 255, 0.3);
+            color: #bb86fc;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-family: var(--font-tech);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .bond-codin-back-btn:hover {
+            background: rgba(124, 77, 255, 0.2);
+            border-color: #bb86fc;
+        }
+        .bond-codin-workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .bond-codin-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .bond-codin-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(124, 77, 255, 0.15);
+            background: rgba(15, 21, 37, 0.8);
+        }
+        .bond-codin-code-box {
+            margin-bottom: 12px;
+        }
+        .bond-codin-code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .bond-codin-code-label {
+            font-family: var(--font-tech);
+            font-size: 11px;
+            color: #bb86fc;
+            letter-spacing: 1px;
+        }
+        .bond-codin-code-editor {
+            width: 100%;
+            min-height: 120px;
+            max-height: 300px;
+            background: #0d1117;
+            border: 1px solid rgba(124, 77, 255, 0.2);
+            border-radius: 8px;
+            color: #e6edf3;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.6;
+            padding: 12px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .bond-codin-code-editor:focus {
+            outline: none;
+            border-color: #bb86fc;
+            box-shadow: 0 0 0 2px rgba(124, 77, 255, 0.15);
+        }
+        .bond-codin-code-editor::placeholder { color: #6e7681; }
+        .bond-codin-query-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .bond-codin-query-input {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid rgba(124, 77, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 14px;
+            padding: 12px;
+            resize: none;
+            min-height: 48px;
+            max-height: 120px;
+            font-family: inherit;
+        }
+        .bond-codin-query-input:focus {
+            outline: none;
+            border-color: #bb86fc;
+        }
+        .bond-codin-send-btn {
+            background: linear-gradient(135deg, #7c4dff, #03dac6);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .bond-codin-send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(124, 77, 255, 0.4);
+        }
+        .bond-codin-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        body.theme-light .bond-codin-code-editor { background: #f6f8fa; color: #1f2328; border-color: #d0d7de; }
+        body.theme-light .bond-codin-code-editor::placeholder { color: #8c959f; }
+        body.theme-light .bond-codin-header-bar { background: linear-gradient(90deg, #f3e5f5, #e0f7fa); }
+        body.theme-light .bond-codin-brand { color: #6200ea; }
+        body.theme-light .bond-codin-back-btn { color: #6200ea; border-color: rgba(98, 0, 234, 0.3); }
+
         @media print {
             .sidebar, .input-area, .chat-header .header-actions, .status-info,
             body::before, body::after, .brand-section, .ai-avatar { display: none !important; }
@@ -1434,6 +1617,7 @@
             <div class="foldable-content">
                 <div class="kb-list" id="kbList"></div>
                 <button class="config-btn" onclick="document.getElementById('kbInput').click()">+ 添加文档</button>
+                <button class="bond-codin-nav-btn" onclick="enterBondCodinMode()" title="进入代码审计与架构分析模式">💻 Bond Codin · 编程大师</button>
                 <input type="file" id="kbInput" style="display:none" accept=".txt,.md,.csv,.json,.docx,.pdf,.png,.jpg,.jpeg,.gif,.webp,.bmp" onchange="handleKbUpload(event)">
                 <label class="kb-toggle"><input type="checkbox" id="kbToggle" onchange="toggleKb()"> 启用知识库检索</label>
             </div>
@@ -1495,7 +1679,6 @@
                         <option value="chat">💬 标准</option>
                         <option value="think">🧠 思考</option>
                         <option value="predict">📊 预测</option>
-                        <option value="bondcodin">💻 Bond Codin</option>
                     </select>
                 </div>
                 <!-- Bond Codin 代码粘贴区 -->
@@ -1525,6 +1708,54 @@ Bond Codin将基于SIS-APP三层架构规范进行代码审计、漏洞分析与
                         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                     </svg>
                 </button>
+            </div>
+        </div>
+
+        <!-- Bond Codin 独立面板 -->
+        <div class="bond-codin-panel" id="bondCodinPanel">
+            <div class="bond-codin-header-bar">
+                <div class="bond-codin-brand">◈ BOND CODIN <span>中债系统编程大师</span></div>
+                <button class="bond-codin-back-btn" onclick="exitBondCodinMode()">← 返回金融助手</button>
+            </div>
+            <div class="bond-codin-workspace">
+                <div class="bond-codin-messages" id="bondCodinMessages"></div>
+                <div class="bond-codin-input-area">
+                    <div class="bond-codin-code-box">
+                        <div class="bond-codin-code-header">
+                            <span class="bond-codin-code-label">⌘ 粘贴待审计代码</span>
+                            <select id="bondCodinLang2" class="bond-codin-lang-select">
+                                <option value="java">Java</option>
+                                <option value="sql">SQL</option>
+                                <option value="xml">XML/Config</option>
+                                <option value="yaml">YAML</option>
+                                <option value="javascript">JavaScript</option>
+                                <option value="python">Python</option>
+                                <option value="go">Go</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <textarea id="bondCodinEditor" class="bond-codin-code-editor" placeholder="在此粘贴代码片段，支持 Java / SQL / XML / YAML 等...
+
+Bond Codin 将基于 SIS-APP 三层架构规范进行：
+• 代码审计与漏洞扫描（空指针、并发安全、SQL注入、事务边界）
+• 架构合规性分析（Service/Logic/Mapper 分层规范）
+• 分布式微服务拆分建议（DDD 限界上下文、Saga 事务）
+• 性能优化方案（JVM 调优、SQL 执行计划、缓存策略）"></textarea>
+                    </div>
+                    <div class="bond-codin-query-row">
+                        <textarea id="bondCodinQuery" class="bond-codin-query-input" placeholder="输入分析指令，例如：
+• 审计这段代码的并发安全问题
+• 给出这段 Service 层的分布式改造方案
+• 分析性能瓶颈并提出优化建议
+• 检查是否符合 SIS-APP 三层架构规范" rows="1" onkeydown="handleBondCodinKeyDown(event)"></textarea>
+                        <button class="bond-codin-send-btn" id="bondCodinSendBtn" onclick="sendBondCodinMessage()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -1839,14 +2070,182 @@ Bond Codin将基于SIS-APP三层架构规范进行代码审计、漏洞分析与
         function onModeChange(mode) {
             const codeArea = document.getElementById('bondCodinCodeArea');
             const userInput = document.getElementById('userInput');
-            if (mode === 'bondcodin') {
-                codeArea.style.display = 'block';
-                userInput.placeholder = '输入分析指令（如：审计这段代码的并发安全问题 / 给出分布式改造方案 / 分析性能瓶颈）...';
-            } else {
-                codeArea.style.display = 'none';
-                userInput.placeholder = '输入分析指令、粘贴文本或拖拽文件到此处...';
+            codeArea.style.display = 'none';
+            userInput.placeholder = '输入分析指令、粘贴文本或拖拽文件到此处...';
+        }
+
+        // ================= Bond Codin 独立模式 =================
+        let isBondCodinMode = false;
+        let bondCodinChatHistory = [];
+        let bondCodinCurrentId = null;
+
+        function enterBondCodinMode() {
+            isBondCodinMode = true;
+            // 隐藏普通聊天界面
+            document.querySelector('.chat-header').style.display = 'none';
+            document.querySelector('.messages-container').style.display = 'none';
+            document.querySelector('.input-area').style.display = 'none';
+            // 显示 Bond Codin 面板
+            document.getElementById('bondCodinPanel').classList.add('active');
+            // 开启新会话
+            startBondCodinChat();
+        }
+
+        function exitBondCodinMode() {
+            isBondCodinMode = false;
+            // 显示普通聊天界面
+            document.querySelector('.chat-header').style.display = '';
+            document.querySelector('.messages-container').style.display = '';
+            document.querySelector('.input-area').style.display = '';
+            // 隐藏 Bond Codin 面板
+            document.getElementById('bondCodinPanel').classList.remove('active');
+        }
+
+        function startBondCodinChat() {
+            bondCodinCurrentId = Date.now();
+            const container = document.getElementById('bondCodinMessages');
+            container.innerHTML = '';
+            const welcome = document.createElement('div');
+            welcome.className = 'message ai';
+            welcome.innerHTML = `<div class="ai-avatar" style="background: linear-gradient(135deg, #7c4dff, #03dac6);">BC</div><div class="bubble"><div style="font-family: var(--font-tech); color: #bb86fc; font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;">◈ Bond Codin · 中债系统编程大师</div>欢迎使用 Bond Codin！我可以帮你：<br><br>• <b>代码审计</b>：扫描空指针、并发安全、SQL注入、事务边界、N+1查询<br>• <b>架构评审</b>：评估 Service/Logic/Mapper 分层合规性、耦合度、扩展性<br>• <b>分布式改造</b>：设计微服务拆分方案、DDD 限界上下文、Saga 分布式事务<br>• <b>性能优化</b>：JVM 调优、SQL 执行计划分析、缓存策略、异步化改造<br><br>请在上方粘贴代码，输入分析指令后点击发送。</div><div class="status-info"><span>Mode: Bond Codin</span><span>Architecture Audit Engine v1.0</span></div>`;
+            container.appendChild(welcome);
+        }
+
+        function handleBondCodinKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendBondCodinMessage();
             }
         }
+
+        async function sendBondCodinMessage() {
+            const queryInput = document.getElementById('bondCodinQuery');
+            const codeEditor = document.getElementById('bondCodinEditor');
+            const langSelect = document.getElementById('bondCodinLang2');
+            const btn = document.getElementById('bondCodinSendBtn');
+            const container = document.getElementById('bondCodinMessages');
+
+            const query = queryInput.value.trim();
+            const code = codeEditor ? codeEditor.value.trim() : '';
+            if (!query || btn.disabled) return;
+
+            // 显示用户消息
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            let userContent = query;
+            if (code) {
+                userContent += '\n\n```' + (langSelect ? langSelect.value : 'java') + '\n' + code + '\n```';
+            }
+            userMsg.innerHTML = `<div class="bubble">${escapeHtml(userContent).replace(/\n/g, '<br>')}</div>`;
+            container.appendChild(userMsg);
+
+            queryInput.value = '';
+            queryInput.style.height = 'auto';
+            btn.disabled = true;
+            container.scrollTop = container.scrollHeight;
+
+            // 构建 AI 消息框
+            const loadingId = 'bc-' + Date.now();
+            const aiMsg = document.createElement('div');
+            aiMsg.className = 'message ai';
+            aiMsg.id = loadingId;
+            aiMsg.innerHTML = `
+                <div class="ai-avatar" style="background: linear-gradient(135deg, #7c4dff, #03dac6);">BC</div>
+                <div class="bubble">
+                    <details class="think-box" id="think-box-${loadingId}" style="display: none;" open>
+                        <summary>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                            <span id="think-status-${loadingId}" class="think-status-text">正在深入思考...</span>
+                        </summary>
+                        <div class="think-content" id="think-content-${loadingId}"></div>
+                    </details>
+                    <div class="answer-content" id="answer-content-${loadingId}">
+                        <div class="typing"><span></span><span></span><span></span></div>
+                    </div>
+                </div>
+                <div class="status-info"><span id="state-${loadingId}">Bond Codin · 代码审计引擎启动...</span></div>`;
+            container.appendChild(aiMsg);
+            container.scrollTop = container.scrollHeight;
+
+            // 构建 prompt
+            const cfg = getApiConfig();
+            const model = getActiveModel(cfg);
+            if (!model) { alert('请先在配置中设置模型'); btn.disabled = false; return; }
+
+            let finalPrompt = query;
+            if (code) {
+                finalPrompt += `\n\n【待审计代码】\n\`\`\`${langSelect ? langSelect.value : 'java'}\n${code}\n\`\`\`\n`;
+            }
+            finalPrompt += '\n\n请基于中债SIS-APP架构规范与分布式微服务最佳实践，给出专业分析。';
+
+            const apiMessages = [
+                { role: 'system', content: 'Bond Codin' },
+                { role: 'user', content: finalPrompt }
+            ];
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
+                    body: JSON.stringify({ model: model.name, messages: apiMessages, temperature: 0.5, stream: true, mode: 'bondcodin', userMessage: query })
+                });
+
+                if (!response.ok) {
+                    let errMsg = `HTTP ${response.status}`;
+                    try { const errJson = await response.json(); if (errJson.error) errMsg = errJson.error; } catch {}
+                    throw new Error(errMsg);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let fullReasoning = '', fullAnswer = '', buffer = '';
+                let hasClearedTyping = false;
+
+                const thinkBox = document.getElementById(`think-box-${loadingId}`);
+                const thinkContent = document.getElementById(`think-content-${loadingId}`);
+                const answerBox = document.getElementById(`answer-content-${loadingId}`);
+                const statusState = document.getElementById(`state-${loadingId}`);
+                setTextContent(statusState, '正在接收分析结果...');
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    for (let line of lines) {
+                        line = line.trim();
+                        if (!line) continue;
+                        if (line === 'data: [DONE]') break;
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                const delta = data.choices[0].delta;
+                                if (delta.reasoning_content) {
+                                    if (thinkBox.style.display === 'none') thinkBox.style.display = 'block';
+                                    fullReasoning += delta.reasoning_content;
+                                    thinkContent.innerHTML = renderMarkdown(fullReasoning);
+                                    container.scrollTop = container.scrollHeight;
+                                }
+                                if (delta.content) {
+                                    if (!hasClearedTyping) { answerBox.innerHTML = ''; hasClearedTyping = true; }
+                                    fullAnswer += delta.content;
+                                    answerBox.innerHTML = renderMarkdown(fullAnswer);
+                                    container.scrollTop = container.scrollHeight;
+                                }
+                            } catch {}
+                        }
+                    }
+                }
+                setTextContent(statusState, '分析完成');
+            } catch (err) {
+                document.getElementById(`answer-content-${loadingId}`).innerHTML = `<div style="color:var(--danger)">请求失败: ${escapeHtml(err.message)}</div>`;
+                setTextContent(document.getElementById(`state-${loadingId}`), 'Error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+        // ==========================================
         // ==========================================
 
         // ================= 文件上传 =================
@@ -2157,17 +2556,16 @@ Bond Codin将基于SIS-APP三层架构规范进行代码审计、漏洞分析与
         }
 
         function startNewChat() {
+            if (isBondCodinMode) {
+                startBondCodinChat();
+                return;
+            }
             currentChatId = Date.now();
             const container = document.getElementById('messagesContainer');
             container.innerHTML = '';
             const welcome = document.createElement('div');
             welcome.className = 'message ai';
-            const isBondCodin = document.getElementById('modeSelect').value === 'bondcodin';
-            if (isBondCodin) {
-                welcome.innerHTML = `<div class="ai-avatar">BC</div><div class="bubble"><div style="font-family: var(--font-tech); color: var(--accent-color); font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;">◈ Bond Codin · 中债系统编程大师</div>欢迎使用 Bond Codin！我可以帮你：<br>• 审计 SIS-APP 代码漏洞（空指针、并发、SQL注入、事务边界等）<br>• 分析三层架构合规性（Service/Logic/Mapper）<br>• 设计分布式微服务拆分方案<br>• 优化性能瓶颈与 JVM 调优建议<br><br>请在上方粘贴代码，输入分析指令后发送。</div><div class="status-info"><span>Mode: Bond Codin</span><span>Architecture Audit Engine</span></div>`;
-            } else {
-                welcome.innerHTML = `<div class="ai-avatar">AI</div><div class="bubble"><div style="font-family: var(--font-tech); color: var(--accent-color); font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;">◈ CCDC 智能金融助手 · 新会话</div>您好，我是AI智能机器人小发，您的专属私人债券助手~竭诚为您服务。</div><div class="status-info"><span>Mode: Hybrid</span><span>CCDC Neural Engine</span></div>`;
-            }
+            welcome.innerHTML = `<div class="ai-avatar">AI</div><div class="bubble"><div style="font-family: var(--font-tech); color: var(--accent-color); font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;">◈ CCDC 智能金融助手 · 新会话</div>您好，我是AI智能机器人小发，您的专属私人债券助手~竭诚为您服务。</div><div class="status-info"><span>Mode: Hybrid</span><span>CCDC Neural Engine</span></div>`;
             container.appendChild(welcome);
             renderHistory();
         }
