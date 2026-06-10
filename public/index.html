@@ -1317,6 +1317,57 @@
         .kb-toggle { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 11px; color: var(--text-sub); cursor: pointer; }
         .kb-toggle input { accent-color: var(--accent-color); }
 
+        /* ===== Bond Codin 代码区 ===== */
+        .bond-codin-code-area {
+            display: none;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            padding: 10px 12px;
+        }
+        .bond-codin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .bond-codin-label {
+            font-family: var(--font-tech);
+            font-size: 11px;
+            color: var(--accent-color);
+            letter-spacing: 1px;
+        }
+        .bond-codin-lang-select {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+        }
+        .bond-codin-lang-select:focus { outline: none; border-color: var(--accent-color); }
+        .bond-codin-textarea {
+            width: 100%;
+            min-height: 80px;
+            max-height: 200px;
+            background: #0d1117;
+            border: 1px solid rgba(0,229,255,0.15);
+            border-radius: 6px;
+            color: #e6edf3;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            line-height: 1.5;
+            padding: 10px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .bond-codin-textarea:focus { outline: none; border-color: var(--accent-color); }
+        .bond-codin-textarea::placeholder { color: #6e7681; }
+        body.theme-light .bond-codin-textarea { background: #f6f8fa; color: #1f2328; border-color: #d0d7de; }
+        body.theme-light .bond-codin-textarea::placeholder { color: #8c959f; }
+
         @media print {
             .sidebar, .input-area, .chat-header .header-actions, .status-info,
             body::before, body::after, .brand-section, .ai-avatar { display: none !important; }
@@ -1440,11 +1491,30 @@
         <div class="input-area">
             <div class="input-wrapper" id="dropZone">
                 <div class="mode-selector">
-                    <select id="modeSelect" class="mode-select">
+                    <select id="modeSelect" class="mode-select" onchange="onModeChange(this.value)">
                         <option value="chat">💬 标准</option>
                         <option value="think">🧠 思考</option>
                         <option value="predict">📊 预测</option>
+                        <option value="bondcodin">💻 Bond Codin</option>
                     </select>
+                </div>
+                <!-- Bond Codin 代码粘贴区 -->
+                <div class="bond-codin-code-area" id="bondCodinCodeArea">
+                    <div class="bond-codin-header">
+                        <span class="bond-codin-label">⌘ 粘贴待审计代码</span>
+                        <select id="bondCodinLang" class="bond-codin-lang-select">
+                            <option value="java">Java</option>
+                            <option value="sql">SQL</option>
+                            <option value="xml">XML/Config</option>
+                            <option value="yaml">YAML</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="go">Go</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <textarea id="bondCodinInput" class="bond-codin-textarea" placeholder="在此粘贴代码片段，支持Java/SQL/XML/YAML等...
+Bond Codin将基于SIS-APP三层架构规范进行代码审计、漏洞分析与分布式改造建议"></textarea>
                 </div>
                 <textarea id="userInput" placeholder="输入分析指令、粘贴文本或拖拽文件到此处..." rows="1" onkeydown="handleKeyDown(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onpaste="handlePaste(event)"></textarea>
                 <input type="file" id="fileInput" style="display:none" accept=".txt,.md,.csv,.json" onchange="handleFileSelect(event)">
@@ -1759,9 +1829,23 @@
             const modeSelect = document.getElementById('modeSelect');
             input.value = t.text;
             modeSelect.value = t.mode;
+            onModeChange(t.mode);
             input.style.height = 'auto';
             input.style.height = input.scrollHeight + 'px';
             input.focus();
+        }
+
+        // Bond Codin 模式切换
+        function onModeChange(mode) {
+            const codeArea = document.getElementById('bondCodinCodeArea');
+            const userInput = document.getElementById('userInput');
+            if (mode === 'bondcodin') {
+                codeArea.style.display = 'block';
+                userInput.placeholder = '输入分析指令（如：审计这段代码的并发安全问题 / 给出分布式改造方案 / 分析性能瓶颈）...';
+            } else {
+                codeArea.style.display = 'none';
+                userInput.placeholder = '输入分析指令、粘贴文本或拖拽文件到此处...';
+            }
         }
         // ==========================================
 
@@ -2078,7 +2162,12 @@
             container.innerHTML = '';
             const welcome = document.createElement('div');
             welcome.className = 'message ai';
-            welcome.innerHTML = `<div class="ai-avatar">AI</div><div class="bubble"><div style="font-family: var(--font-tech); color: var(--accent-color); font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;">◈ CCDC 智能金融助手 · 新会话</div>您好，我是AI智能机器人小发，您的专属私人债券助手~竭诚为您服务。</div><div class="status-info"><span>Mode: Hybrid</span><span>CCDC Neural Engine</span></div>`;
+            const isBondCodin = document.getElementById('modeSelect').value === 'bondcodin';
+            if (isBondCodin) {
+                welcome.innerHTML = `<div class="ai-avatar">BC</div><div class="bubble"><div style="font-family: var(--font-tech); color: var(--accent-color); font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;">◈ Bond Codin · 中债系统编程大师</div>欢迎使用 Bond Codin！我可以帮你：<br>• 审计 SIS-APP 代码漏洞（空指针、并发、SQL注入、事务边界等）<br>• 分析三层架构合规性（Service/Logic/Mapper）<br>• 设计分布式微服务拆分方案<br>• 优化性能瓶颈与 JVM 调优建议<br><br>请在上方粘贴代码，输入分析指令后发送。</div><div class="status-info"><span>Mode: Bond Codin</span><span>Architecture Audit Engine</span></div>`;
+            } else {
+                welcome.innerHTML = `<div class="ai-avatar">AI</div><div class="bubble"><div style="font-family: var(--font-tech); color: var(--accent-color); font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;">◈ CCDC 智能金融助手 · 新会话</div>您好，我是AI智能机器人小发，您的专属私人债券助手~竭诚为您服务。</div><div class="status-info"><span>Mode: Hybrid</span><span>CCDC Neural Engine</span></div>`;
+            }
             container.appendChild(welcome);
             renderHistory();
         }
@@ -2106,8 +2195,9 @@
             const msgWrapper = document.createElement('div');
             msgWrapper.className = 'message ai';
             msgWrapper.id = loadingId;
+            const avatarLabel = mode === 'bondcodin' ? 'BC' : 'AI';
             msgWrapper.innerHTML = `
-                <div class="ai-avatar">AI</div>
+                <div class="ai-avatar">${avatarLabel}</div>
                 <div class="bubble">
                     <details class="think-box" id="think-box-${loadingId}" style="display: none;" open>
                         <summary>
@@ -2140,6 +2230,17 @@
                 systemPrompt = personaPrompt || "你是一个顶级的量化债券定价与发行预测引擎（AI-Pricer）。你需要结合国债收益率曲线、基准利率（LPR/MLF）、信用溢价及近期同类债券发行结果，提供具备高置信度的前瞻性量化预测。严禁使用模棱两可的词汇，必须输出结构化、量化的精准估算。";
                 finalPrompt = `请作为债券发行预测专家，对以下场景执行结构化量化预测分析。请务必严格遵循以下格式输出结论：\n\n- 【基准锚定】：分析当前定价基准（如国债收益率或同期限票据利率）。\n- 【信用溢价预测】：结合主体评级与行业利差，估算合理信用利差（BP）。\n- 【核心定价预测】：直接给出预测的票面利率绝对值区间（如 2.50% - 2.80%）。\n- 【发行情绪与胜率】：基于当前资金面，评估全额认购概率及边际倍数预期。\n- 【风险提示】：指出可能导致发行利率偏离预测值的关键风险点。\n\n数据/场景输入：${text}`;
                 setTextContent(document.getElementById(`state-${loadingId}`), "量化定价预测模型计算中...");
+            } else if (mode === 'bondcodin') {
+                const codeInput = document.getElementById('bondCodinInput');
+                const lang = document.getElementById('bondCodinLang').value;
+                const code = codeInput ? codeInput.value.trim() : '';
+                systemPrompt = personaPrompt || "Bond Codin"; // 后端会替换为完整的 BOND_CODIN_PROMPT
+                let codeBlock = '';
+                if (code) {
+                    codeBlock = `\n\n【待审计代码】\n\`\`\`${lang}\n${code}\n\`\`\`\n`;
+                }
+                finalPrompt = `${text}${codeBlock}\n\n请基于中债SIS-APP架构规范与分布式微服务最佳实践，给出专业分析。`;
+                setTextContent(document.getElementById(`state-${loadingId}`), "Bond Codin · 代码审计引擎启动...");
             }
 
             let apiMessages = [{ role: "system", content: systemPrompt }];
