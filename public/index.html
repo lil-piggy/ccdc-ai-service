@@ -1697,7 +1697,7 @@
                         </select>
                     </div>
                     <textarea id="bondCodinInput" class="bond-codin-textarea" placeholder="在此粘贴代码片段，支持Java/SQL/XML/YAML等...
-Bond Codin将基于SIS-APP三层架构规范进行代码审计、漏洞分析与分布式改造建议"></textarea>
+Bond Codin将基于中债金科企业级战略规划三层架构规范进行代码审计、漏洞分析与分布式改造建议"></textarea>
                 </div>
                 <textarea id="userInput" placeholder="输入分析指令、粘贴文本或拖拽文件到此处..." rows="1" onkeydown="handleKeyDown(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onpaste="handlePaste(event)"></textarea>
                 <input type="file" id="fileInput" style="display:none" accept=".txt,.md,.csv,.json" onchange="handleFileSelect(event)">
@@ -1736,7 +1736,7 @@ Bond Codin将基于SIS-APP三层架构规范进行代码审计、漏洞分析与
                         </div>
                         <textarea id="bondCodinEditor" class="bond-codin-code-editor" placeholder="在此粘贴代码片段，支持 Java / SQL / XML / YAML 等...
 
-Bond Codin 将基于 SIS-APP 三层架构规范进行：
+Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行：
 • 代码审计与漏洞扫描（空指针、并发安全、SQL注入、事务边界）
 • 架构合规性分析（Service/Logic/Mapper 分层规范）
 • 分布式微服务拆分建议（DDD 限界上下文、Saga 事务）
@@ -1747,7 +1747,7 @@ Bond Codin 将基于 SIS-APP 三层架构规范进行：
 • 审计这段代码的并发安全问题
 • 给出这段 Service 层的分布式改造方案
 • 分析性能瓶颈并提出优化建议
-• 检查是否符合 SIS-APP 三层架构规范" rows="1" onkeydown="handleBondCodinKeyDown(event)"></textarea>
+• 检查是否符合 中债金科企业级战略规划 三层架构规范" rows="1" onkeydown="handleBondCodinKeyDown(event)"></textarea>
                         <button class="bond-codin-send-btn" id="bondCodinSendBtn" onclick="sendBondCodinMessage()">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -2176,7 +2176,7 @@ Bond Codin 将基于 SIS-APP 三层架构规范进行：
             if (code) {
                 finalPrompt += `\n\n【待审计代码】\n\`\`\`${langSelect ? langSelect.value : 'java'}\n${code}\n\`\`\`\n`;
             }
-            finalPrompt += '\n\n请基于中债SIS-APP架构规范与分布式微服务最佳实践，给出专业分析。';
+            finalPrompt += '\n\n请基于中债中债金科企业级战略规划架构规范与分布式微服务最佳实践，给出专业分析。';
 
             const apiMessages = [
                 { role: 'system', content: 'Bond Codin' },
@@ -2637,7 +2637,7 @@ Bond Codin 将基于 SIS-APP 三层架构规范进行：
                 if (code) {
                     codeBlock = `\n\n【待审计代码】\n\`\`\`${lang}\n${code}\n\`\`\`\n`;
                 }
-                finalPrompt = `${text}${codeBlock}\n\n请基于中债SIS-APP架构规范与分布式微服务最佳实践，给出专业分析。`;
+                finalPrompt = `${text}${codeBlock}\n\n请基于中债中债金科企业级战略规划架构规范与分布式微服务最佳实践，给出专业分析。`;
                 setTextContent(document.getElementById(`state-${loadingId}`), "Bond Codin · 代码审计引擎启动...");
             }
 
