@@ -1481,25 +1481,27 @@
         }
         .bond-codin-code-editor {
             width: 100%;
-            min-height: 120px;
-            max-height: 300px;
+            min-height: 140px;
+            max-height: 320px;
             background: #0d1117;
             border: 1px solid rgba(124, 77, 255, 0.2);
             border-radius: 8px;
             color: #e6edf3;
             font-family: var(--font-mono);
             font-size: 13px;
-            line-height: 1.6;
-            padding: 12px;
+            line-height: 1.7;
+            padding: 14px;
             resize: vertical;
             box-sizing: border-box;
+            white-space: pre;
+            overflow-x: auto;
         }
         .bond-codin-code-editor:focus {
             outline: none;
             border-color: #bb86fc;
             box-shadow: 0 0 0 2px rgba(124, 77, 255, 0.15);
         }
-        .bond-codin-code-editor::placeholder { color: #6e7681; }
+        .bond-codin-code-editor::placeholder { color: #9ea7b3; font-size: 12px; }
         .bond-codin-query-row {
             display: flex;
             gap: 10px;
@@ -1511,17 +1513,20 @@
             border: 1px solid rgba(124, 77, 255, 0.2);
             border-radius: 8px;
             color: var(--text-main);
-            font-size: 14px;
-            padding: 12px;
+            font-size: 13px;
+            line-height: 1.7;
+            padding: 12px 14px;
             resize: none;
-            min-height: 48px;
+            min-height: 56px;
             max-height: 120px;
             font-family: inherit;
+            overflow-y: auto;
         }
         .bond-codin-query-input:focus {
             outline: none;
             border-color: #bb86fc;
         }
+        .bond-codin-query-input::placeholder { color: #9ea7b3; font-size: 12px; }
         .bond-codin-send-btn {
             background: linear-gradient(135deg, #7c4dff, #03dac6);
             border: none;
@@ -1547,6 +1552,26 @@
         }
         body.theme-light .bond-codin-code-editor { background: #f6f8fa; color: #1f2328; border-color: #d0d7de; }
         body.theme-light .bond-codin-code-editor::placeholder { color: #8c959f; }
+        body.theme-light .bond-codin-query-input::placeholder { color: #8c959f; }
+
+        /* Bond Codin 文件上传按钮 */
+        .bond-codin-upload-btn {
+            background: rgba(124, 77, 255, 0.12);
+            border: 1px solid rgba(124, 77, 255, 0.3);
+            border-radius: 4px;
+            color: #bb86fc;
+            font-size: 11px;
+            font-family: var(--font-tech);
+            padding: 4px 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 8px;
+        }
+        .bond-codin-upload-btn:hover {
+            background: rgba(124, 77, 255, 0.25);
+            border-color: #bb86fc;
+        }
+        body.theme-light .bond-codin-upload-btn { color: #6200ea; border-color: rgba(98, 0, 234, 0.3); background: rgba(98, 0, 234, 0.08); }
         body.theme-light .bond-codin-header-bar { background: linear-gradient(90deg, #f3e5f5, #e0f7fa); }
         body.theme-light .bond-codin-brand { color: #6200ea; }
         body.theme-light .bond-codin-back-btn { color: #6200ea; border-color: rgba(98, 0, 234, 0.3); }
@@ -1736,17 +1761,21 @@ Bond Codin将基于中债金科企业级战略规划三层架构规范进行代�
                     <div class="bond-codin-code-box">
                         <div class="bond-codin-code-header">
                             <span class="bond-codin-code-label">⌘ 粘贴待审计代码</span>
-                            <select id="bondCodinLang2" class="bond-codin-lang-select">
-                                <option value="java">Java</option>
-                                <option value="sql">SQL</option>
-                                <option value="xml">XML/Config</option>
-                                <option value="yaml">YAML</option>
-                                <option value="javascript">JavaScript</option>
-                                <option value="python">Python</option>
-                                <option value="go">Go</option>
-                                <option value="other">Other</option>
-                            </select>
+                            <div style="display:flex;align-items:center;">
+                                <button class="bond-codin-upload-btn" onclick="document.getElementById('bondCodinFileInput').click()" title="上传 .java/.py/.js/.go 等代码文件">📁 上传代码</button>
+                                <select id="bondCodinLang2" class="bond-codin-lang-select">
+                                    <option value="java">Java</option>
+                                    <option value="sql">SQL</option>
+                                    <option value="xml">XML/Config</option>
+                                    <option value="yaml">YAML</option>
+                                    <option value="javascript">JavaScript</option>
+                                    <option value="python">Python</option>
+                                    <option value="go">Go</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
                         </div>
+                        <input type="file" id="bondCodinFileInput" style="display:none" accept=".java,.py,.js,.ts,.go,.c,.cpp,.h,.hpp,.cs,.php,.rb,.swift,.kt,.scala,.rs,.sql,.xml,.yaml,.yml,.json,.properties" onchange="handleBondCodinFileUpload(event)">
                         <textarea id="bondCodinEditor" class="bond-codin-code-editor" placeholder="在此粘贴代码片段，支持 Java / SQL / XML / YAML 等...
 
 Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行：
@@ -2126,6 +2155,34 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
             welcome.className = 'message ai';
             welcome.innerHTML = `<div class="ai-avatar" style="background: linear-gradient(135deg, #7c4dff, #03dac6);">BC</div><div class="bubble"><div style="font-family: var(--font-tech); color: #bb86fc; font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;">◈ Bond Codin · 中债系统编程大师</div>欢迎使用 Bond Codin！我可以帮你：<br><br>• <b>代码审计</b>：扫描空指针、并发安全、SQL注入、事务边界、N+1查询<br>• <b>架构评审</b>：评估 Service/Logic/Mapper 分层合规性、耦合度、扩展性<br>• <b>分布式改造</b>：设计微服务拆分方案、DDD 限界上下文、Saga 分布式事务<br>• <b>性能优化</b>：JVM 调优、SQL 执行计划分析、缓存策略、异步化改造<br><br>请在上方粘贴代码，输入分析指令后点击发送。</div><div class="status-info"><span>Mode: Bond Codin</span><span>Architecture Audit Engine v1.0</span></div>`;
             container.appendChild(welcome);
+        }
+
+        function handleBondCodinFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const ext = file.name.split('.').pop().toLowerCase();
+            const langMap = {
+                'java': 'java', 'py': 'python', 'js': 'javascript', 'ts': 'javascript',
+                'go': 'go', 'c': 'other', 'cpp': 'other', 'h': 'other', 'hpp': 'other',
+                'cs': 'other', 'php': 'other', 'rb': 'other', 'swift': 'other',
+                'kt': 'other', 'scala': 'other', 'rs': 'other', 'sql': 'sql',
+                'xml': 'xml', 'yaml': 'yaml', 'yml': 'yaml', 'json': 'other',
+                'properties': 'other'
+            };
+            const lang = langMap[ext] || 'other';
+            const langSelect = document.getElementById('bondCodinLang2');
+            if (langSelect) langSelect.value = lang;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const editor = document.getElementById('bondCodinEditor');
+                editor.value = ev.target.result;
+                editor.style.height = 'auto';
+                editor.style.height = Math.min(Math.max(editor.scrollHeight, 140), 320) + 'px';
+                // 自动聚焦到分析指令输入框
+                document.getElementById('bondCodinQuery').focus();
+            };
+            reader.onerror = () => { alert('文件读取失败'); };
+            reader.readAsText(file);
         }
 
         function handleBondCodinKeyDown(e) {
