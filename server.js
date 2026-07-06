@@ -236,6 +236,19 @@ app.delete('/api/kb/:id', authMiddleware, async (req, res) => {
   res.json({ ok: true });
 });
 
+// P0 routes
+const announcementRoutes = require('./routes/announcements');
+const financeCheckRoutes = require('./routes/financeCheck');
+const complianceRoutes = require('./routes/compliance');
+const localBondRoutes = require('./routes/localBond');
+const taskRoutes = require('./routes/tasks');
+
+app.use('/api/announcement', authMiddleware, announcementRoutes);
+app.use('/api/finance', authMiddleware, financeCheckRoutes);
+app.use('/api/compliance', authMiddleware, complianceRoutes);
+app.use('/api/local-bond', authMiddleware, localBondRoutes);
+app.use('/api/tasks', authMiddleware, taskRoutes);
+
 // Chat SSE proxy
 app.post('/api/chat', authMiddleware, async (req, res) => {
   const { messages, model, temperature, mode, userMessage } = req.body;
