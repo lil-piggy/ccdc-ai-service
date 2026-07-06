@@ -60,6 +60,7 @@ async function initDb() {
         file_name VARCHAR(255),
         file_path TEXT,
         source VARCHAR(50),
+        doc_type VARCHAR(50) DEFAULT 'announcement',
         bond_code VARCHAR(50),
         bond_name VARCHAR(255),
         issuer VARCHAR(255),
@@ -73,12 +74,20 @@ async function initDb() {
         is_reissue BOOLEAN DEFAULT FALSE,
         lead_underwriter VARCHAR(255),
         underwriters TEXT,
+        raw_extracted JSONB,
         status VARCHAR(50) DEFAULT 'pending',
         confidence DECIMAL(3,2),
         extracted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    // 兼容旧表：补充 doc_type 和 raw_extracted 字段
+    try {
+      await client.query(`ALTER TABLE bond_announcements ADD COLUMN IF NOT EXISTS doc_type VARCHAR(50) DEFAULT 'announcement'`);
+      await client.query(`ALTER TABLE bond_announcements ADD COLUMN IF NOT EXISTS raw_extracted JSONB`);
+    } catch (e) {
+      console.log('[DB] bond_announcements columns already exist or alter failed:', e.message);
+    }
 
     // P0: 跨文档财务勾稽核查
     await client.query(`
@@ -336,15 +345,17 @@ async function deleteKbDoc(id, userId) {
 async function createAnnouncement(data) {
   const result = await pool.query(
     `INSERT INTO bond_announcements
-     (user_id, file_name, file_path, source, bond_code, bond_name, issuer, bond_type,
+     (user_id, file_name, file_path, source, doc_type, bond_code, bond_name, issuer, bond_type,
       issue_date, issue_scale, term, bidding_method, benchmark_rate, basic_spread,
-      is_reissue, lead_underwriter, underwriters, status, confidence)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+      is_reissue, lead_underwriter, underwriters, raw_extracted, status, confidence)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
      RETURNING id`,
-    [data.user_id, data.file_name, data.file_path, data.source, data.bond_code,
-     data.bond_name, data.issuer, data.bond_type, data.issue_date, data.issue_scale,
+    [data.user_id, data.file_name, data.file_path, data.source, data.doc_type || 'announcement',
+     data.bond_code, data.bond_name, data.issuer, data.bond_type, data.issue_date, data.issue_scale,
      data.term, data.bidding_method, data.benchmark_rate, data.basic_spread,
-     data.is_reissue, data.lead_underwriter, data.underwriters, data.status, data.confidence]
+     data.is_reissue, data.lead_underwriter, data.underwriters,
+     data.raw_extracted ? JSON.stringify(data.raw_extracted) : null,
+     data.status, data.confidence]
   );
   return result.rows[0];
 }
