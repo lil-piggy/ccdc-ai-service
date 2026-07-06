@@ -223,6 +223,45 @@ async function initDb() {
       )
     `);
 
+    // P1-1: 中标结果结构化数据
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS bidding_results (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        file_name VARCHAR(255),
+        file_path TEXT,
+        bond_code VARCHAR(50),
+        bond_name VARCHAR(255),
+        issuer VARCHAR(255),
+        bond_type VARCHAR(50),
+        issue_date DATE,
+        total_issue_scale DECIMAL(18,4),
+        total_bid_amount DECIMAL(18,4),
+        winning_rate DECIMAL(10,4),
+        marginal_rate DECIMAL(10,4),
+        avg_rate DECIMAL(10,4),
+        weighted_rate DECIMAL(10,4),
+        status VARCHAR(50) DEFAULT 'pending',
+        confidence DECIMAL(3,2),
+        raw_extracted JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS bidding_result_details (
+        id SERIAL PRIMARY KEY,
+        bidding_result_id INTEGER REFERENCES bidding_results(id) ON DELETE CASCADE,
+        member_name VARCHAR(255),
+        bid_amount DECIMAL(18,4),
+        bid_rate DECIMAL(10,4),
+        winning_amount DECIMAL(18,4),
+        category VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log('[DB] PostgreSQL tables initialized successfully.');
   } catch (err) {
     console.error('[DB] Init error:', err.message);
@@ -400,6 +439,64 @@ async function updateAnnouncement(id, userId, data) {
     `UPDATE bond_announcements SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = $${idx++} AND user_id = $${idx++}`,
     params
   );
+}
+
+// ==================== P1: 中标结果 ====================
+async function createBiddingResult(data) {
+  const result = await pool.query(
+    `INSERT INTO bidding_results
+     (user_id, file_name, file_path, bond_code, bond_name, issuer, bond_type,
+      issue_date, total_issue_scale, total_bid_amount, winning_rate, marginal_rate,
+      avg_rate, weighted_rate, status, confidence, raw_extracted)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+     RETURNING id`,
+    [data.user_id, data.file_name, data.file_path, data.bond_code, data.bond_name,
+     data.issuer, data.bond_type, data.issue_date, data.total_issue_scale,
+     data.total_bid_amount, data.winning_rate, data.marginal_rate, data.avg_rate,
+     data.weighted_rate, data.status, data.confidence,
+     data.raw_extracted ? JSON.stringify(data.raw_extracted) : null]
+  );
+  return result.rows[0];
+}
+
+async function createBiddingResultDetail(biddingResultId, detail) {
+  await pool.query(
+    `INSERT INTO bidding_result_details
+     (bidding_result_id, member_name, bid_amount, bid_rate, winning_amount, category)
+     VALUES ($1,$2,$3,$4,$5,$6)`,
+    [biddingResultId, detail.member_name, detail.bid_amount, detail.bid_rate,
+     detail.winning_amount, detail.category]
+  );
+}
+
+async function getBiddingResults(userId, filters = {}, page = 1, pageSize = 20) {
+  const conditions = ['user_id = $1'];
+  const params = [userId];
+  let idx = 2;
+  if (filters.start_date) { conditions.push(`issue_date >= $${idx++}`); params.push(filters.start_date); }
+  if (filters.end_date) { conditions.push(`issue_date <= $${idx++}`); params.push(filters.end_date); }
+  if (filters.bond_type) { conditions.push(`bond_type = $${idx++}`); params.push(filters.bond_type); }
+  const where = conditions.join(' AND ');
+  const offset = (page - 1) * pageSize;
+  const countResult = await pool.query(`SELECT COUNT(*) FROM bidding_results WHERE ${where}`, params);
+  const rowsResult = await pool.query(
+    `SELECT * FROM bidding_results WHERE ${where} ORDER BY issue_date DESC LIMIT $${idx++} OFFSET $${idx++}`,
+    [...params, pageSize, offset]
+  );
+  return { total: parseInt(countResult.rows[0].count), rows: rowsResult.rows };
+}
+
+async function getBiddingResultById(id, userId) {
+  const result = await pool.query('SELECT * FROM bidding_results WHERE id = $1 AND user_id = $2', [id, userId]);
+  return result.rows[0] || null;
+}
+
+async function getBiddingResultDetails(biddingResultId) {
+  const result = await pool.query(
+    'SELECT * FROM bidding_result_details WHERE bidding_result_id = $1 ORDER BY winning_amount DESC',
+    [biddingResultId]
+  );
+  return result.rows;
 }
 
 // ==================== P0: 财务勾稽核查 ====================
@@ -633,6 +730,12 @@ module.exports = {
   completeLocalBondCheckTask,
   getLocalBondCheckItems,
   getLocalBondCheckTasks,
+  // P1
+  createBiddingResult,
+  createBiddingResultDetail,
+  getBiddingResults,
+  getBiddingResultById,
+  getBiddingResultDetails,
   createUploadedFile,
   createAiTask,
   getAiTask,

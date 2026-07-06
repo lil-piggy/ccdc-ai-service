@@ -88,6 +88,7 @@ const BOND_CODIN_PROMPT = `你是 Bond Codin（中债系统编程大师），一
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // JWT middleware
@@ -242,12 +243,18 @@ const financeCheckRoutes = require('./routes/financeCheck');
 const complianceRoutes = require('./routes/compliance');
 const localBondRoutes = require('./routes/localBond');
 const taskRoutes = require('./routes/tasks');
+const biddingResultRoutes = require('./routes/biddingResults');
+const p1AdvancedRoutes = require('./routes/p1Advanced');
+const p2AdvancedRoutes = require('./routes/p2Advanced');
 
 app.use('/api/announcement', authMiddleware, announcementRoutes);
 app.use('/api/finance', authMiddleware, financeCheckRoutes);
 app.use('/api/compliance', authMiddleware, complianceRoutes);
 app.use('/api/local-bond', authMiddleware, localBondRoutes);
 app.use('/api/tasks', authMiddleware, taskRoutes);
+app.use('/api/bidding-results', authMiddleware, biddingResultRoutes);
+app.use('/api/p1', authMiddleware, p1AdvancedRoutes);
+app.use('/api/p2', authMiddleware, p2AdvancedRoutes);
 
 // Chat SSE proxy
 app.post('/api/chat', authMiddleware, async (req, res) => {
