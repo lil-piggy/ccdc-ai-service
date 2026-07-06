@@ -32,11 +32,7 @@ const ADMIN_API_MODEL = ADMIN_MODELS[0]?.name || 'kimi-k2.6';
  * @param {string} userPrompt - user 提示词
  * @param {object} options - 选项 { model, temperature, maxTokens }
  */
-async function callAI(systemPrompt, userPrompt, options = {}) {
-  if (!ADMIN_API_URL || !ADMIN_API_KEY) {
-    throw new Error('管理员未配置 API');
-  }
-
+async function callAIWithOptions(systemPrompt, userPrompt, options = {}) {
   const messages = [];
   if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
   messages.push({ role: 'user', content: userPrompt });
@@ -58,12 +54,36 @@ async function callAI(systemPrompt, userPrompt, options = {}) {
 
   if (!response.ok) {
     const errText = await response.text().catch(() => '未知错误');
-    throw new Error(`上游 API 错误: ${errText}`);
+    const err = new Error(`上游 API 错误: ${errText}`);
+    err.isApiError = true;
+    err.errText = errText;
+    throw err;
   }
 
   const data = await response.json();
-  const content = data.choices?.[0]?.message?.content || '';
+  return data.choices?.[0]?.message?.content || '';
+}
 
+async function callAI(systemPrompt, userPrompt, options = {}) {
+  if (!ADMIN_API_URL || !ADMIN_API_KEY) {
+    throw new Error('管理员未配置 API');
+  }
+
+  try {
+    const content = await callAIWithOptions(systemPrompt, userPrompt, options);
+    return parseAIContent(content, options);
+  } catch (err) {
+    // 某些模型只支持 temperature=1，自动重试
+    if (err.isApiError && err.errText && /invalid temperature|temperature.*only.*1|only 1 is allowed/i.test(err.errText)) {
+      console.log('[AI] temperature 不被支持，自动使用 temperature=1 重试');
+      const content = await callAIWithOptions(systemPrompt, userPrompt, { ...options, temperature: 1 });
+      return parseAIContent(content, options);
+    }
+    throw err;
+  }
+}
+
+function parseAIContent(content, options) {
   if (options.jsonMode) {
     try {
       return JSON.parse(content);
@@ -76,7 +96,6 @@ async function callAI(systemPrompt, userPrompt, options = {}) {
       throw new Error('AI 返回结果无法解析为 JSON: ' + content.slice(0, 200));
     }
   }
-
   return content;
 }
 
