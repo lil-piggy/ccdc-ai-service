@@ -59,7 +59,7 @@ async function extractText(filePath, mimeType) {
         text = pageTexts.join('\n\n');
       } catch (ocrErr) {
         console.error('[PDF OCR error]', ocrErr.message);
-        throw new Error('该 PDF 为扫描件/图片格式，无法直接提取文字。请上传可复制文字的 PDF，或先转换为图片后使用图片 OCR 上传。');
+        throw new Error('该 PDF 为扫描件/图片格式，后端 OCR 识别失败。请使用「发行智能助手 → 工具 → 扫描件 PDF OCR」功能先进行本地 OCR 识别。');
       }
     }
 
