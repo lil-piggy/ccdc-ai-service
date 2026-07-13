@@ -6,7 +6,7 @@
     <meta name="referrer" content="no-referrer">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <title>CCDC 智能金融助手 · 中债发行AI大脑</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <!-- 知识库文件解析库 -->
     <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
@@ -17,28 +17,44 @@
     </script>
     <style>
         :root {
-            --bg-color: #020617;
-            --sidebar-bg: #0a0e27;
-            --chat-bg: #020617;
-            --input-bg: #0f1525;
-            --accent-color: #00e5ff;
-            --accent-glow: rgba(0, 229, 255, 0.35);
-            --accent-secondary: #7c4dff;
-            --text-main: #e0f7fa;
-            --text-sub: #90a4ae;
-            --user-msg-bg: linear-gradient(135deg, #2979ff, #00e5ff);
-            --ai-msg-bg: #0a0e27;
-            --border-color: rgba(0, 229, 255, 0.12);
-            --success: #00e676;
-            --danger: #ff5252;
-            --font-tech: 'Orbitron', 'Segoe UI', sans-serif;
-            --font-mono: 'Share Tech Mono', 'Consolas', monospace;
+            --bg-color: #F4F6F8;
+            --sidebar-bg: #FFFFFF;
+            --chat-bg: #F4F6F8;
+            --input-bg: #FFFFFF;
+            --accent-color: #0A2540;
+            --accent-gold: #C89B3C;
+            --accent-glow: rgba(10, 37, 64, 0.08);
+            --accent-secondary: #143A5E;
+            --text-main: #0F172A;
+            --text-sub: #5A677A;
+            --text-muted: #8A96A8;
+            --user-msg-bg: linear-gradient(135deg, #0A2540, #143A5E);
+            --ai-msg-bg: #FFFFFF;
+            --border-color: #DEE2E7;
+            --border-hover: #BFC7D0;
+            --success: #0D7A5F;
+            --danger: #C53030;
+            --warning: #B76E00;
+            --info: #2563EB;
+            --shadow-sm: 0 1px 2px rgba(10, 37, 64, 0.04);
+            --shadow-md: 0 2px 8px rgba(10, 37, 64, 0.06);
+            --shadow-lg: 0 4px 16px rgba(10, 37, 64, 0.08);
+            --shadow-xl: 0 8px 24px rgba(10, 37, 64, 0.12);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 10px;
+            --radius-xl: 12px;
+            --font-tech: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+            --font-mono: 'IBM Plex Mono', 'Consolas', monospace;
         }
 
         /* ===== 全局背景与特效 ===== */
+        * {
+            box-sizing: border-box;
+        }
         body {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             height: 100vh;
@@ -51,22 +67,11 @@
             position: fixed;
             inset: 0;
             background-image:
-                linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
+                linear-gradient(rgba(10, 37, 64, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(10, 37, 64, 0.015) 1px, transparent 1px);
+            background-size: 60px 60px;
             pointer-events: none;
             z-index: 0;
-        }
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
-            opacity: 0.4;
-            animation: scanline 8s linear infinite;
-            pointer-events: none;
-            z-index: 9999;
         }
         @keyframes scanline {
             0% { transform: translateX(-100%); }
@@ -75,83 +80,65 @@
 
         /* ===== 侧边栏 ===== */
         .sidebar {
-            width: 300px;
-            background: linear-gradient(180deg, var(--sidebar-bg) 0%, #060a1a 100%);
+            width: 280px;
+            background: var(--sidebar-bg);
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             transition: all 0.3s;
             position: relative;
             z-index: 1;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+            box-shadow: 1px 0 4px rgba(10, 37, 64, 0.04);
         }
         .brand-section {
-            padding: 20px 15px 15px;
+            padding: 20px 16px 16px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             position: relative;
-            overflow: hidden;
-        }
-        .brand-section::after {
-            content: '';
-            position: absolute;
-            bottom: -1px; left: 10%; right: 10%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            background: linear-gradient(180deg, #FFFFFF 0%, #FAFBFC 100%);
         }
         .brand-logo {
-            width: 140px;
+            width: 96px;
             height: auto;
             border-radius: 50%;
             padding: 4px;
-            background: linear-gradient(135deg, rgba(0,229,255,0.2), rgba(255,0,128,0.2));
-            box-shadow: 0 0 15px rgba(0,229,255,0.3);
-            animation: disco-bounce 1.2s ease-in-out infinite, disco-glow 2s ease-in-out infinite;
+            background: linear-gradient(135deg, rgba(10, 37, 64, 0.08), rgba(200, 155, 60, 0.12));
+            box-shadow: 0 2px 8px rgba(10, 37, 64, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
         }
         .brand-logo:hover {
-            animation: disco-bounce 0.6s ease-in-out infinite, disco-glow 1s ease-in-out infinite;
-            filter: brightness(1.2);
-        }
-        body.theme-light .brand-logo {
-            background: linear-gradient(135deg, rgba(0,229,255,0.15), rgba(255,0,128,0.15));
-            box-shadow: 0 0 15px rgba(0,229,255,0.15);
-        }
-        @keyframes disco-bounce {
-            0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
-            20% { transform: translateY(-12px) scale(1.08) rotate(-5deg); }
-            40% { transform: translateY(0) scale(0.95) rotate(0deg); }
-            60% { transform: translateY(-8px) scale(1.05) rotate(4deg); }
-            80% { transform: translateY(0) scale(1) rotate(0deg); }
-        }
-        @keyframes disco-glow {
-            0%, 100% { box-shadow: 0 0 15px rgba(0,229,255,0.4), 0 0 30px rgba(0,229,255,0.1); border-color: rgba(0,229,255,0.5); }
-            33% { box-shadow: 0 0 20px rgba(255,0,128,0.5), 0 0 40px rgba(255,0,128,0.2); border-color: rgba(255,0,128,0.5); }
-            66% { box-shadow: 0 0 20px rgba(0,255,136,0.5), 0 0 40px rgba(0,255,136,0.2); border-color: rgba(0,255,136,0.5); }
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(10, 37, 64, 0.12);
         }
         .brand-tagline {
             font-family: var(--font-tech);
             font-size: 11px;
-            color: var(--accent-color);
-            letter-spacing: 2px;
+            color: var(--text-sub);
+            letter-spacing: 1.5px;
             text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(0,229,255,0.3);
-            margin-top: 4px;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        .brand-tagline strong {
+            color: var(--accent-color);
+            font-weight: 600;
         }
         .system-status-bar {
             width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 10px;
+            padding: 5px 10px;
             font-family: var(--font-mono);
             font-size: 10px;
-            color: var(--text-sub);
-            background: rgba(0,229,255,0.03);
-            border-radius: 4px;
+            color: var(--text-muted);
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             margin-top: 4px;
         }
         .sys-indicator {
@@ -163,8 +150,6 @@
             width: 6px; height: 6px;
             background: var(--success);
             border-radius: 50%;
-            box-shadow: 0 0 6px var(--success);
-            animation: pulse-dot 2s infinite;
         }
         @keyframes pulse-dot {
             0%, 100% { opacity: 1; transform: scale(1); }
@@ -172,86 +157,100 @@
         }
 
         .sidebar-header {
-            padding: 14px 18px 10px;
+            padding: 12px 16px 8px;
             font-family: var(--font-tech);
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 600;
-            color: var(--accent-color);
-            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
             text-transform: uppercase;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         .new-chat-btn {
-            width: 85%;
-            margin: 10px auto 6px;
-            padding: 12px;
-            background: transparent;
-            border: 1px dashed var(--accent-color);
-            border-radius: 6px;
-            color: var(--accent-color);
+            width: 90%;
+            margin: 12px auto 8px;
+            padding: 11px;
+            background: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            border-radius: var(--radius-md);
+            color: #FFFFFF;
+            cursor: pointer;
+            font-family: var(--font-tech);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .new-chat-btn:hover {
+            background: var(--accent-secondary);
+            border-color: var(--accent-secondary);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        .new-chat-btn svg {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2.5;
+        }
+        .config-btn {
+            width: 90%;
+            margin: 0 auto 8px;
+            padding: 10px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-sub);
             cursor: pointer;
             font-family: var(--font-tech);
             font-size: 12px;
             font-weight: 500;
-            letter-spacing: 1px;
-            transition: 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-        .new-chat-btn::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0,229,255,0.1), transparent);
-            transition: 0.5s;
-        }
-        .new-chat-btn:hover::before {
-            left: 100%;
-        }
-        .new-chat-btn:hover {
-            background: var(--accent-glow);
-            color: white;
-            border-style: solid;
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
-        .config-btn {
-            width: 85%;
-            margin: 0 auto 6px;
-            padding: 10px;
-            background: transparent;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--text-sub);
-            cursor: pointer;
-            font-family: var(--font-tech);
-            font-size: 11px;
-            letter-spacing: 0.5px;
-            transition: 0.3s;
+            letter-spacing: 0.3px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .config-btn:hover {
             border-color: var(--accent-color);
             color: var(--accent-color);
-            box-shadow: 0 0 10px rgba(0,229,255,0.15);
+            background: rgba(10, 37, 64, 0.03);
+        }
+        .config-btn svg {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2;
         }
 
         /* 快捷模板 */
         .template-section {
-            padding: 0 15px 10px;
+            padding: 0 16px 12px;
             border-bottom: 1px solid var(--border-color);
         }
         .template-title {
             font-family: var(--font-tech);
             font-size: 10px;
-            color: var(--text-sub);
-            margin-bottom: 8px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
             font-weight: 600;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .template-list { display: flex; flex-wrap: wrap; gap: 6px; }
+        .template-title svg {
+            width: 12px;
+            height: 12px;
+            stroke-width: 2;
+        }
+        .template-list { display: flex; flex-wrap: wrap; gap: 8px; }
 
         /* ===== 可折叠面板 ===== */
         .foldable-panel { border-bottom: 1px solid var(--border-color); transition: all 0.3s; }
@@ -259,118 +258,90 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 15px;
+            padding: 10px 16px;
             cursor: pointer;
             user-select: none;
-            transition: 0.2s;
+            transition: all 0.15s ease;
         }
-        .foldable-header:hover { background: rgba(0,229,255,0.03); }
+        .foldable-header:hover { background: rgba(10, 37, 64, 0.03); }
         .foldable-title {
             font-family: var(--font-tech);
             font-size: 10px;
             color: var(--text-sub);
             font-weight: 600;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             text-transform: uppercase;
             display: flex;
             align-items: center;
             gap: 6px;
         }
+        .foldable-title svg {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2;
+            color: var(--text-muted);
+        }
         .foldable-arrow {
-            font-size: 10px;
-            color: var(--accent-color);
-            transition: transform 0.3s;
-            display: inline-block;
+            width: 14px;
+            height: 14px;
+            color: var(--text-muted);
+            transition: transform 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .foldable-panel.collapsed .foldable-arrow { transform: rotate(-90deg); }
         .foldable-content {
             overflow: hidden;
-            transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+            transition: max-height 0.25s ease, opacity 0.25s ease, padding 0.25s ease;
             max-height: 500px;
             opacity: 1;
-            padding: 0 15px 10px;
+            padding: 0 16px 12px;
         }
         .foldable-panel.collapsed .foldable-content {
             max-height: 0;
             opacity: 0;
-            padding: 0 15px;
-        }
-        /* ===== 全局美化增强 ===== */
-        /* 按钮精致化 */
-        .new-chat-btn, .config-btn, .template-btn, .export-btn, .modal-btn, .table-viz-btn {
-            position: relative;
-            overflow: hidden;
-        }
-        .new-chat-btn::after, .config-btn::after, .template-btn::after {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 0; height: 0;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.4s, height 0.4s;
-        }
-        .new-chat-btn:active::after, .config-btn:active::after, .template-btn:active::after {
-            width: 200px; height: 200px;
-        }
-
-        /* 消息气泡增强 */
-        .user .bubble {
-            position: relative;
-            overflow: hidden;
-        }
-        .user .bubble::after {
-            content: '';
-            position: absolute;
-            top: -50%; right: -50%;
-            width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 60%);
-            opacity: 0.5;
-            pointer-events: none;
-        }
-        .ai .bubble {
-            position: relative;
-            overflow: hidden;
-        }
-        .ai .bubble::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(0,229,255,0.3), transparent);
-            pointer-events: none;
+            padding: 0 16px;
         }
 
         /* 历史项卡片化 */
         .history-item {
-            border-radius: 8px;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid transparent;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: var(--radius-md);
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            margin-bottom: 6px;
         }
         .history-item:hover {
-            transform: translateX(3px);
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-sm);
         }
         .history-item.active {
-            background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(124,77,255,0.04));
+            background: rgba(10, 37, 64, 0.04);
+            border-color: var(--accent-color);
+            box-shadow: inset 3px 0 0 var(--accent-color);
         }
 
         /* 市场数据卡片化 */
         .market-item {
-            background: linear-gradient(145deg, rgba(0,229,255,0.04), rgba(124,77,255,0.02));
+            background: var(--input-bg);
             border: 1px solid var(--border-color);
-            border-radius: 6px;
-            transition: all 0.2s;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
         }
         .market-item:hover {
-            border-color: rgba(0,229,255,0.3);
-            box-shadow: 0 2px 10px rgba(0,229,255,0.06);
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-sm);
+        }
+        .market-item:hover {
+            border-color: rgba(10, 37, 64,0.3);
+            box-shadow: 0 2px 10px rgba(10, 37, 64,0.06);
             transform: translateY(-1px);
         }
 
         /* 输入框发光聚焦 */
         .input-wrapper:focus-within {
-            box-shadow: 0 0 0 2px rgba(0,229,255,0.15), 0 0 30px rgba(0,229,255,0.08), inset 0 1px 0 rgba(0,229,255,0.05);
+            box-shadow: 0 0 0 2px rgba(10, 37, 64,0.15), 0 0 30px rgba(10, 37, 64,0.08), inset 0 1px 0 rgba(10, 37, 64,0.05);
         }
 
         /* 模态框顶部光带动画 */
@@ -389,9 +360,9 @@
 
         /* 数据卡片玻璃态 */
         .data-card {
-            background: linear-gradient(135deg, rgba(0,229,255,0.05), rgba(124,77,255,0.03));
+            background: linear-gradient(135deg, rgba(10, 37, 64,0.05), rgba(10, 37, 64, 0.03));
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,229,255,0.15);
+            border: 1px solid var(--border-color);
             position: relative;
             overflow: hidden;
         }
@@ -406,7 +377,7 @@
 
         /* 思考框美化 */
         .think-box {
-            background: linear-gradient(135deg, rgba(0,229,255,0.04), rgba(124,77,255,0.02));
+            background: linear-gradient(135deg, rgba(10, 37, 64,0.04), rgba(10, 37, 64, 0.02));
             border-radius: 8px;
             border-left: 2px solid var(--accent-secondary);
         }
@@ -414,12 +385,12 @@
         /* 滚动条精致化 */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.12); border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(0,229,255,0.35); }
+        ::-webkit-scrollbar-thumb { background: rgba(10, 37, 64,0.12); border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(10, 37, 64,0.35); }
 
         /* 选中文字颜色 */
         ::selection {
-            background: rgba(0,229,255,0.25);
+            background: rgba(10, 37, 64,0.25);
             color: var(--text-main);
         }
         .template-btn {
@@ -436,8 +407,8 @@
         .template-btn:hover {
             border-color: var(--accent-color);
             color: var(--accent-color);
-            background: rgba(0,229,255,0.08);
-            box-shadow: 0 0 8px rgba(0,229,255,0.1);
+            background: rgba(10, 37, 64,0.08);
+            box-shadow: 0 0 8px rgba(10, 37, 64,0.1);
         }
 
         .history-list { flex: 1; overflow-y: auto; padding: 10px; }
@@ -475,20 +446,20 @@
             align-items: center;
         }
         .history-item:hover {
-            background: rgba(0,229,255,0.05);
+            background: rgba(10, 37, 64,0.05);
             color: var(--text-main);
-            border-color: rgba(0,229,255,0.2);
-            box-shadow: 0 0 12px rgba(0,229,255,0.08);
+            border-color: rgba(10, 37, 64,0.2);
+            box-shadow: 0 0 12px rgba(10, 37, 64,0.08);
         }
         .history-item.active {
-            background: rgba(0,229,255,0.08);
+            background: rgba(10, 37, 64,0.08);
             color: var(--text-main);
             border: 1px solid var(--accent-color);
-            box-shadow: 0 0 15px rgba(0,229,255,0.12), inset 0 0 10px rgba(0,229,255,0.03);
+            box-shadow: 0 0 15px rgba(10, 37, 64,0.12), inset 0 0 10px rgba(10, 37, 64,0.03);
         }
         .history-item.pinned {
             border-left: 3px solid var(--accent-color);
-            background: rgba(0,229,255,0.04);
+            background: rgba(10, 37, 64,0.04);
         }
         .history-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 10px; }
         .item-actions { display: none; gap: 8px; align-items: center; }
@@ -505,7 +476,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(10, 14, 39, 0.85);
+            background: var(--sidebar-bg);
             backdrop-filter: blur(12px);
             z-index: 10;
             position: relative;
@@ -531,7 +502,7 @@
             width: 10px; height: 10px;
             background-color: var(--success);
             border-radius: 50%;
-            box-shadow: 0 0 10px var(--success), 0 0 20px rgba(0,230,118,0.3);
+            box-shadow: 0 0 8px var(--success);
             animation: pulse-ring 2s infinite;
             position: relative;
         }
@@ -540,7 +511,7 @@
             position: absolute;
             inset: -4px;
             border-radius: 50%;
-            border: 1px solid rgba(0,230,118,0.3);
+            border: 1px solid var(--success);
             animation: pulse-ring-outer 2s infinite;
         }
         @keyframes pulse-ring {
@@ -570,7 +541,7 @@
             font-size: 11px;
             color: var(--accent-color);
             letter-spacing: 1px;
-            text-shadow: 0 0 8px rgba(0,229,255,0.3);
+            text-shadow: none;
         }
         .export-wrap { position: relative; }
         .export-btn {
@@ -588,7 +559,7 @@
         .export-btn:hover {
             border-color: var(--accent-color);
             color: var(--accent-color);
-            box-shadow: 0 0 10px rgba(0,229,255,0.15);
+            box-shadow: 0 0 10px rgba(10, 37, 64,0.15);
         }
         .export-dropdown {
             position: absolute;
@@ -596,7 +567,7 @@
             background: var(--sidebar-bg);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 20px rgba(0,229,255,0.05);
+            box-shadow: var(--shadow-xl);
             display: none;
             min-width: 160px;
             z-index: 20;
@@ -612,7 +583,7 @@
             font-family: var(--font-tech);
         }
         .export-dropdown div:hover {
-            background: rgba(0,229,255,0.08);
+            background: rgba(10, 37, 64,0.08);
             color: var(--text-main);
         }
 
@@ -652,8 +623,8 @@
             font-size: 14px;
             color: var(--bg-color);
             margin-bottom: 6px;
-            box-shadow: 0 0 12px rgba(0,229,255,0.3);
-            border: 2px solid rgba(0,229,255,0.3);
+            box-shadow: 0 0 12px rgba(10, 37, 64,0.3);
+            border: 2px solid rgba(10, 37, 64,0.3);
         }
 
         .bubble {
@@ -668,16 +639,16 @@
             background: var(--user-msg-bg);
             color: white;
             border-bottom-right-radius: 2px;
-            box-shadow: 0 4px 20px rgba(41,121,255,0.25), 0 0 30px rgba(0,229,255,0.08);
-            border: 1px solid rgba(0,229,255,0.15);
+            box-shadow: 0 4px 16px rgba(10, 37, 64, 0.12);
+            border: 1px solid rgba(10, 37, 64,0.15);
         }
         .ai .bubble {
-            background: linear-gradient(145deg, #0a0e27, #0f1525);
+            background: var(--ai-msg-bg);
             color: var(--text-main);
             border: 1px solid var(--border-color);
             border-bottom-left-radius: 2px;
             min-width: 100px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(0,229,255,0.05);
+            box-shadow: var(--shadow-md);
         }
         .ai .bubble::before {
             content: '';
@@ -690,7 +661,7 @@
         }
 
         .think-box {
-            background: rgba(0,229,255,0.03);
+            background: rgba(10, 37, 64,0.03);
             border-left: 2px solid var(--accent-secondary);
             border-radius: 6px;
             margin-bottom: 15px;
@@ -722,7 +693,7 @@
             padding-top: 10px;
             font-family: var(--font-mono);
             font-size: 12px;
-            color: #80deea;
+            color: var(--text-sub);
         }
         .think-status-text { animation: blink-cursor 1.2s infinite; color: var(--accent-color); }
         @keyframes blink-cursor {
@@ -741,13 +712,13 @@
         }
 
         .data-card {
-            background: linear-gradient(145deg, #0a1020, #0f1a30);
-            border: 1px solid rgba(0,229,255,0.2);
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
             padding: 15px;
             margin-top: 15px;
-            border-radius: 8px;
+            border-radius: var(--radius-md);
             border-left: 3px solid var(--accent-color);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3), 0 0 20px rgba(0,229,255,0.05);
+            box-shadow: var(--shadow-sm);
         }
         .data-card h4 {
             margin: 0 0 8px 0;
@@ -761,12 +732,12 @@
         }
         .data-card code {
             font-family: var(--font-mono);
-            color: #69f0ae;
+            color: var(--success);
             font-size: 12px;
-            background: #020617;
+            background: rgba(10, 37, 64, 0.05);
             padding: 2px 5px;
             border-radius: 4px;
-            border: 1px solid rgba(0,229,255,0.1);
+            border: 1px solid rgba(10, 37, 64,0.1);
         }
 
         /* Markdown 表格 */
@@ -783,7 +754,7 @@
             text-align: left;
         }
         .md-table th {
-            background: rgba(0,229,255,0.1);
+            background: rgba(10, 37, 64,0.1);
             color: var(--accent-color);
             font-weight: 600;
             font-family: var(--font-tech);
@@ -791,7 +762,7 @@
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
-        .md-table tr:nth-child(even) { background: rgba(0,229,255,0.02); }
+        .md-table tr:nth-child(even) { background: rgba(10, 37, 64,0.02); }
         .table-viz-btn {
             margin-top: 8px;
             background: transparent;
@@ -805,8 +776,8 @@
             transition: 0.2s;
         }
         .table-viz-btn:hover {
-            background: rgba(0,229,255,0.1);
-            box-shadow: 0 0 10px rgba(0,229,255,0.1);
+            background: rgba(10, 37, 64,0.1);
+            box-shadow: 0 0 10px rgba(10, 37, 64,0.1);
         }
 
         /* ===== 输入区域 ===== */
@@ -825,7 +796,7 @@
             padding: 8px 12px;
             border-radius: 12px;
             transition: 0.3s;
-            box-shadow: 0 4px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(0,229,255,0.03);
+            box-shadow: 0 4px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(10, 37, 64,0.03);
             align-items: center;
             position: relative;
         }
@@ -840,7 +811,7 @@
         }
         .input-wrapper:focus-within {
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 2px rgba(0,229,255,0.15), 0 0 25px rgba(0,229,255,0.1);
+            box-shadow: 0 0 0 2px rgba(10, 37, 64,0.15), 0 0 25px rgba(10, 37, 64,0.1);
         }
         .input-wrapper:focus-within::before { opacity: 0.6; }
 
@@ -890,11 +861,11 @@
         }
         .upload-btn:hover {
             color: var(--accent-color);
-            background: rgba(0,229,255,0.08);
-            box-shadow: 0 0 8px rgba(0,229,255,0.1);
+            background: rgba(10, 37, 64,0.08);
+            box-shadow: 0 0 8px rgba(10, 37, 64,0.1);
         }
         .send-btn {
-            background: linear-gradient(135deg, var(--accent-color), #2979ff);
+            background: linear-gradient(135deg, var(--accent-color), #143A5E);
             border: none;
             border-radius: 8px;
             width: 40px; height: 40px;
@@ -905,15 +876,15 @@
             color: var(--bg-color);
             transition: 0.2s;
             align-self: flex-end;
-            box-shadow: 0 0 15px rgba(0,229,255,0.3);
+            box-shadow: 0 0 15px rgba(10, 37, 64,0.3);
         }
         .send-btn:hover {
             transform: scale(1.05);
-            box-shadow: 0 0 25px rgba(0,229,255,0.5);
+            box-shadow: 0 0 25px rgba(10, 37, 64,0.5);
         }
         .send-btn:disabled {
-            background: #1a2035;
-            color: #4a5568;
+            background: var(--border-hover);
+            color: var(--text-muted);
             box-shadow: none;
             cursor: not-allowed;
         }
@@ -935,13 +906,13 @@
 
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.15); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(0,229,255,0.3); }
+        ::-webkit-scrollbar-thumb { background: rgba(10, 37, 64,0.15); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(10, 37, 64,0.3); }
 
         /* ===== 配置弹窗 ===== */
         .modal-overlay {
             position: fixed; inset: 0;
-            background: rgba(2,6,23,0.85);
+            background: rgba(10, 37, 64, 0.55);
             backdrop-filter: blur(8px);
             z-index: 1000;
             display: none;
@@ -950,7 +921,7 @@
         }
         .modal-overlay.active { display: flex; }
         .modal {
-            background: linear-gradient(145deg, #0a0e27, #0f1525);
+            background: var(--sidebar-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             width: 520px;
@@ -958,7 +929,7 @@
             max-height: 85vh;
             overflow-y: auto;
             padding: 24px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(0,229,255,0.08);
+            box-shadow: var(--shadow-xl);
             position: relative;
         }
         .modal::before {
@@ -1002,7 +973,7 @@
         }
         .form-group input:focus, .form-group select:focus {
             border-color: var(--accent-color);
-            box-shadow: 0 0 10px rgba(0,229,255,0.1);
+            box-shadow: 0 0 10px rgba(10, 37, 64,0.1);
         }
         .modal-actions {
             display: flex;
@@ -1021,12 +992,12 @@
             letter-spacing: 0.5px;
         }
         .modal-btn.primary {
-            background: linear-gradient(135deg, var(--accent-color), #2979ff);
+            background: linear-gradient(135deg, var(--accent-color), #143A5E);
             color: var(--bg-color);
             font-weight: 600;
         }
         .modal-btn.primary:hover {
-            box-shadow: 0 0 15px rgba(0,229,255,0.3);
+            box-shadow: 0 0 15px rgba(10, 37, 64,0.3);
         }
         .modal-btn.secondary {
             background: transparent;
@@ -1074,7 +1045,7 @@
         /* ===== 图表弹窗 ===== */
         .chart-overlay {
             position: fixed; inset: 0;
-            background: rgba(2,6,23,0.9);
+            background: rgba(10, 37, 64, 0.6);
             z-index: 2000;
             display: none;
             align-items: center;
@@ -1082,7 +1053,7 @@
         }
         .chart-overlay.active { display: flex; }
         .chart-box {
-            background: linear-gradient(145deg, #0a0e27, #0f1525);
+            background: var(--sidebar-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             width: 800px;
@@ -1092,7 +1063,7 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(0,229,255,0.06);
+            box-shadow: var(--shadow-xl);
         }
         .chart-header {
             display: flex;
@@ -1132,129 +1103,136 @@
         .chart-type-btns button.active {
             border-color: var(--accent-color);
             color: var(--accent-color);
-            background: rgba(0,229,255,0.1);
-            box-shadow: 0 0 8px rgba(0,229,255,0.1);
+            background: rgba(10, 37, 64, 0.06);
+            box-shadow: 0 0 0 1px rgba(10, 37, 64, 0.08);
         }
 
         /* ===== 打印 ===== */
         /* ===== 主题切换 ===== */
         body.theme-light {
-            --bg-color: #eef1f5;
+            --bg-color: #F4F6F8;
             --sidebar-bg: #ffffff;
-            --chat-bg: #eef1f5;
+            --chat-bg: #F4F6F8;
             --input-bg: #ffffff;
-            --accent-color: #1565c0;
-            --accent-glow: rgba(21, 101, 192, 0.25);
-            --accent-secondary: #7c4dff;
-            --text-main: #1a1a2e;
-            --text-sub: #4a5568;
-            --border-color: rgba(21, 101, 192, 0.2);
-            --success: #2e7d32;
-            --danger: #c62828;
+            --accent-color: #0A2540;
+            --accent-glow: rgba(10, 37, 64, 0.08);
+            --accent-secondary: #0A2540;
+            --text-main: #0F172A;
+            --text-sub: #5A677A;
+            --border-color: rgba(10, 37, 64, 0.12);
+            --success: #0D7A5F;
+            --danger: #C53030;
         }
         body.theme-light .sidebar {
-            background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%);
-            box-shadow: 4px 0 20px rgba(0,0,0,0.08);
+            background: linear-gradient(180deg, #FFFFFF 0%, #FAFBFC 100%);
+            box-shadow: 1px 0 4px rgba(10, 37, 64, 0.04);
         }
         body.theme-light .foldable-title,
         body.theme-light .template-title,
         body.theme-light .market-name,
         body.theme-light .kb-title {
-            color: #374151;
-            font-weight: 700;
+            color: #0F172A;
+            font-weight: 600;
         }
         body.theme-light .foldable-header:hover {
-            background: rgba(21, 101, 192, 0.06);
+            background: rgba(10, 37, 64, 0.04);
         }
         body.theme-light .history-item {
-            color: #4b5563;
-            border-color: rgba(21, 101, 192, 0.1);
+            color: #5A677A;
+            border-color: rgba(10, 37, 64, 0.08);
         }
         body.theme-light .history-item:hover {
-            background: rgba(21, 101, 192, 0.08);
-            color: #1a1a2e;
-            border-color: rgba(21, 101, 192, 0.25);
+            background: rgba(10, 37, 64, 0.05);
+            color: #0F172A;
+            border-color: rgba(10, 37, 64, 0.18);
         }
         body.theme-light .history-item.active {
-            background: rgba(21, 101, 192, 0.1);
+            background: rgba(10, 37, 64, 0.06);
             border-color: var(--accent-color);
-            color: #1a1a2e;
+            color: #0F172A;
         }
         body.theme-light .brand-tagline {
-            color: #1565c0;
+            color: #0A2540;
             text-shadow: none;
         }
         body.theme-light .system-status-bar {
-            background: rgba(21, 101, 192, 0.05);
+            background: var(--bg-color);
         }
         body.theme-light .sidebar-header {
-            color: #1565c0;
+            color: #0A2540;
         }
         body.theme-light .config-btn {
-            color: #4a5568;
-            border-color: rgba(21, 101, 192, 0.2);
+            color: #5A677A;
+            border-color: rgba(10, 37, 64, 0.15);
         }
         body.theme-light .config-btn:hover {
-            color: #1565c0;
-            border-color: #1565c0;
+            color: #0A2540;
+            border-color: #0A2540;
         }
         body.theme-light .kb-toggle {
-            color: #374151;
+            color: #0F172A;
         }
         body.theme-light .clear-data-btn {
-            color: #c62828;
-            border-color: rgba(198, 40, 40, 0.3);
+            color: #C53030;
+            border-color: rgba(197, 48, 48, 0.25);
         }
         body.theme-light .history-item {
-            color: #374151;
-            background: rgba(0,0,0,0.02);
+            color: #0F172A;
+            background: rgba(10, 37, 64, 0.02);
         }
         body.theme-light .history-item:hover {
-            background: rgba(21, 101, 192, 0.08);
-            color: #1a1a2e;
+            background: rgba(10, 37, 64, 0.05);
+            color: #0F172A;
         }
         body.theme-light .history-item.active {
-            background: rgba(21, 101, 192, 0.12);
-            color: #0d47a1;
+            background: rgba(10, 37, 64, 0.08);
+            color: #0A2540;
         }
         body.theme-light ::-webkit-scrollbar-thumb {
-            background: rgba(21, 101, 192, 0.2);
+            background: rgba(10, 37, 64, 0.15);
             border: 1px solid rgba(255,255,255,0.5);
         }
         body.theme-light ::-webkit-scrollbar-thumb:hover {
-            background: rgba(21, 101, 192, 0.4);
+            background: rgba(10, 37, 64, 0.3);
         }
         body.theme-light::before {
-            background-image: none;
+            background-image:
+                linear-gradient(rgba(10, 37, 64, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(10, 37, 64, 0.015) 1px, transparent 1px);
         }
         body.theme-light .ai .bubble {
             background: #ffffff;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 12px rgba(10, 37, 64, 0.06);
         }
         body.theme-light .user .bubble {
-            background: linear-gradient(135deg, #1565c0, #42a5f5);
+            background: linear-gradient(135deg, #0A2540, #143A5E);
         }
-        body.theme-cyber {
-            --bg-color: #0a0014;
-            --sidebar-bg: #120024;
-            --chat-bg: #0a0014;
-            --input-bg: #1a0033;
-            --accent-color: #ff00ff;
-            --accent-glow: rgba(255, 0, 255, 0.35);
-            --accent-secondary: #00ffff;
-            --text-main: #ffe0ff;
-            --text-sub: #b0a0c0;
-            --border-color: rgba(255, 0, 255, 0.2);
-            --success: #00ff88;
-            --danger: #ff3366;
+        body.theme-dark {
+            --bg-color: #0A1929;
+            --sidebar-bg: #0F2236;
+            --chat-bg: #0A1929;
+            --input-bg: #132A40;
+            --accent-color: #C89B3C;
+            --accent-glow: rgba(200, 155, 60, 0.25);
+            --accent-secondary: #E0C06E;
+            --text-main: #F4F6F8;
+            --text-sub: #9AA9B8;
+            --text-muted: #6B7B8D;
+            --user-msg-bg: linear-gradient(135deg, #143A5E, #0A2540);
+            --ai-msg-bg: #132A40;
+            --border-color: rgba(200, 155, 60, 0.18);
+            --border-hover: rgba(200, 155, 60, 0.3);
+            --success: #4CAF93;
+            --danger: #E05C5C;
+            --warning: #E5A853;
         }
-        body.theme-cyber::before {
+        body.theme-dark::before {
             background-image:
-                linear-gradient(rgba(255,0,255,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,255,255,0.04) 1px, transparent 1px);
+                linear-gradient(rgba(200, 155, 60, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(10, 37, 64, 0.05) 1px, transparent 1px);
         }
-        body.theme-cyber::after {
-            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        body.theme-dark::after {
+            background: linear-gradient(90deg, transparent, rgba(200, 155, 60, 0.06), transparent);
         }
         .theme-switcher {
             display: flex;
@@ -1273,20 +1251,20 @@
         .theme-switcher:hover { border-color: var(--accent-color); color: var(--accent-color); }
 
         /* ===== 统计面板 ===== */
-        .stats-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.85); backdrop-filter: blur(8px); z-index: 1500; display: none; align-items: center; justify-content: center; }
+        .stats-overlay { position: fixed; inset: 0; background: rgba(10, 37, 64, 0.5); backdrop-filter: blur(8px); z-index: 1500; display: none; align-items: center; justify-content: center; }
         .stats-overlay.active { display: flex; }
-        .stats-box { background: linear-gradient(145deg, #0a0e27, #0f1525); border: 1px solid var(--border-color); border-radius: 12px; width: 520px; max-width: 90%; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); position: relative; }
+        .stats-box { background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 12px; width: 520px; max-width: 90%; padding: 24px; box-shadow: var(--shadow-xl); position: relative; }
         .stats-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent-color), var(--accent-secondary), var(--accent-color)); border-radius: 12px 12px 0 0; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
-        .stat-card { background: rgba(0,229,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; text-align: center; }
-        .stat-value { font-family: var(--font-tech); font-size: 24px; color: var(--accent-color); text-shadow: 0 0 10px rgba(0,229,255,0.2); }
+        .stat-card { background: rgba(10, 37, 64,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; text-align: center; }
+        .stat-value { font-family: var(--font-tech); font-size: 24px; color: var(--accent-color); }
         .stat-label { font-family: var(--font-tech); font-size: 10px; color: var(--text-sub); margin-top: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
 
         /* ===== 市场数据面板 ===== */
         .market-panel { padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
         .market-title { font-family: var(--font-tech); font-size: 10px; color: var(--accent-color); letter-spacing: 1.5px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .market-item { background: rgba(0,229,255,0.03); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 8px; }
+        .market-item { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 8px; }
         .market-name { font-size: 9px; color: var(--text-sub); font-family: var(--font-tech); }
         .market-value { font-size: 13px; color: var(--text-main); font-family: var(--font-mono); }
         .market-change { font-size: 10px; font-family: var(--font-mono); }
@@ -1297,8 +1275,8 @@
         .persona-list { border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 10px; max-height: 200px; overflow-y: auto; }
         .persona-item { padding: 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: 0.2s; }
         .persona-item:last-child { border-bottom: none; }
-        .persona-item:hover { background: rgba(0,229,255,0.05); }
-        .persona-item.active { background: rgba(0,229,255,0.08); border-left: 3px solid var(--accent-color); }
+        .persona-item:hover { background: rgba(10, 37, 64, 0.04); }
+        .persona-item.active { background: rgba(10, 37, 64, 0.06); border-left: 3px solid var(--accent-color); }
         .persona-name { font-family: var(--font-tech); font-size: 12px; color: var(--text-main); }
         .persona-desc { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
 
@@ -1311,7 +1289,7 @@
         .kb-section { padding: 0 15px 10px; border-bottom: 1px solid var(--border-color); }
         .kb-title { font-family: var(--font-tech); font-size: 10px; color: var(--text-sub); margin-bottom: 8px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
         .kb-list { max-height: 120px; overflow-y: auto; margin-bottom: 8px; }
-        .kb-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 8px; background: rgba(0,229,255,0.03); border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 4px; font-size: 11px; color: var(--text-sub); }
+        .kb-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 8px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 4px; font-size: 11px; color: var(--text-sub); }
         .kb-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .kb-item-del { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 12px; padding: 0 4px; }
         .kb-toggle { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 11px; color: var(--text-sub); cursor: pointer; }
@@ -1320,7 +1298,7 @@
         /* ===== Bond Codin 代码区 ===== */
         .bond-codin-code-area {
             display: none;
-            background: rgba(0,0,0,0.25);
+            background: var(--sidebar-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             margin-bottom: 8px;
@@ -1353,7 +1331,7 @@
             min-height: 80px;
             max-height: 200px;
             background: #0d1117;
-            border: 1px solid rgba(0,229,255,0.15);
+            border: 1px solid rgba(10, 37, 64,0.15);
             border-radius: 6px;
             color: #e6edf3;
             font-family: var(--font-mono);
@@ -1373,8 +1351,8 @@
             width: 100%;
             padding: 12px;
             margin-top: 10px;
-            background: linear-gradient(135deg, #7c4dff, #00e5ff);
-            border: none;
+            background: linear-gradient(135deg, #0A2540, #143A5E);
+            border: 1px solid rgba(200, 155, 60, 0.4);
             border-radius: 8px;
             color: #fff;
             font-family: var(--font-tech);
@@ -1391,7 +1369,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
             transform: translateX(-100%);
             animation: shimmer 3s infinite;
         }
@@ -1402,7 +1380,7 @@
         }
         .bond-codin-nav-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(124, 77, 255, 0.4);
+            box-shadow: 0 4px 20px rgba(10, 37, 64, 0.2);
         }
 
         /* ===== Bond Codin 独立面板 ===== */
@@ -1419,24 +1397,24 @@
             align-items: center;
             justify-content: space-between;
             padding: 12px 20px;
-            background: linear-gradient(90deg, #1a0a2e, #0f1525);
-            border-bottom: 1px solid rgba(124, 77, 255, 0.3);
+            background: linear-gradient(90deg, #0A2540, #143A5E);
+            border-bottom: 1px solid rgba(200, 155, 60, 0.25);
         }
         .bond-codin-brand {
             font-family: var(--font-tech);
             font-size: 14px;
-            color: #bb86fc;
+            color: #F4F6F8;
             letter-spacing: 2px;
         }
         .bond-codin-brand span {
-            color: #03dac6;
+            color: #C89B3C;
             font-size: 11px;
             margin-left: 8px;
         }
         .bond-codin-back-btn {
             background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(124, 77, 255, 0.3);
-            color: #bb86fc;
+            border: 1px solid rgba(200, 155, 60, 0.35);
+            color: #F4F6F8;
             padding: 6px 14px;
             border-radius: 6px;
             font-size: 11px;
@@ -1445,8 +1423,8 @@
             transition: all 0.2s;
         }
         .bond-codin-back-btn:hover {
-            background: rgba(124, 77, 255, 0.2);
-            border-color: #bb86fc;
+            background: rgba(200, 155, 60, 0.15);
+            border-color: #C89B3C;
         }
         .bond-codin-workspace {
             flex: 1;
@@ -1461,8 +1439,8 @@
         }
         .bond-codin-input-area {
             padding: 16px 20px;
-            border-top: 1px solid rgba(124, 77, 255, 0.15);
-            background: rgba(15, 21, 37, 0.8);
+            border-top: 1px solid var(--border-color);
+            background: var(--sidebar-bg);
         }
         .bond-codin-code-box {
             margin-bottom: 12px;
@@ -1476,7 +1454,7 @@
         .bond-codin-code-label {
             font-family: var(--font-tech);
             font-size: 11px;
-            color: #bb86fc;
+            color: var(--text-sub);
             letter-spacing: 1px;
         }
         .bond-codin-code-editor {
@@ -1484,7 +1462,7 @@
             min-height: 140px;
             max-height: 320px;
             background: #0d1117;
-            border: 1px solid rgba(124, 77, 255, 0.2);
+            border: 1px solid rgba(200, 155, 60, 0.25);
             border-radius: 8px;
             color: #e6edf3;
             font-family: var(--font-mono);
@@ -1498,8 +1476,8 @@
         }
         .bond-codin-code-editor:focus {
             outline: none;
-            border-color: #bb86fc;
-            box-shadow: 0 0 0 2px rgba(124, 77, 255, 0.15);
+            border-color: #C89B3C;
+            box-shadow: 0 0 0 2px rgba(200, 155, 60, 0.15);
         }
         .bond-codin-code-editor::placeholder { color: #9ea7b3; font-size: 12px; }
         .bond-codin-query-row {
@@ -1510,7 +1488,7 @@
         .bond-codin-query-input {
             flex: 1;
             background: var(--input-bg);
-            border: 1px solid rgba(124, 77, 255, 0.2);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             color: var(--text-main);
             font-size: 13px;
@@ -1524,12 +1502,12 @@
         }
         .bond-codin-query-input:focus {
             outline: none;
-            border-color: #bb86fc;
+            border-color: var(--accent-color);
         }
-        .bond-codin-query-input::placeholder { color: #9ea7b3; font-size: 12px; }
+        .bond-codin-query-input::placeholder { color: var(--text-muted); font-size: 12px; }
         .bond-codin-send-btn {
-            background: linear-gradient(135deg, #7c4dff, #03dac6);
-            border: none;
+            background: linear-gradient(135deg, #0A2540, #143A5E);
+            border: 1px solid rgba(200, 155, 60, 0.4);
             border-radius: 8px;
             color: #fff;
             width: 48px;
@@ -1543,7 +1521,7 @@
         }
         .bond-codin-send-btn:hover {
             transform: scale(1.05);
-            box-shadow: 0 4px 16px rgba(124, 77, 255, 0.4);
+            box-shadow: 0 4px 16px rgba(10, 37, 64, 0.2);
         }
         .bond-codin-send-btn:disabled {
             opacity: 0.5;
@@ -1556,10 +1534,10 @@
 
         /* Bond Codin 文件上传按钮 */
         .bond-codin-upload-btn {
-            background: rgba(124, 77, 255, 0.12);
-            border: 1px solid rgba(124, 77, 255, 0.3);
+            background: rgba(10, 37, 64, 0.08);
+            border: 1px solid rgba(10, 37, 64, 0.2);
             border-radius: 4px;
-            color: #bb86fc;
+            color: var(--text-sub);
             font-size: 11px;
             font-family: var(--font-tech);
             padding: 4px 10px;
@@ -1568,25 +1546,26 @@
             margin-right: 8px;
         }
         .bond-codin-upload-btn:hover {
-            background: rgba(124, 77, 255, 0.25);
-            border-color: #bb86fc;
+            background: rgba(10, 37, 64, 0.14);
+            border-color: rgba(10, 37, 64, 0.3);
         }
-        body.theme-light .bond-codin-upload-btn { color: #6200ea; border-color: rgba(98, 0, 234, 0.3); background: rgba(98, 0, 234, 0.08); }
-        body.theme-light .bond-codin-header-bar { background: linear-gradient(90deg, #f3e5f5, #e0f7fa); }
-        body.theme-light .bond-codin-brand { color: #6200ea; }
-        body.theme-light .bond-codin-back-btn { color: #6200ea; border-color: rgba(98, 0, 234, 0.3); }
+        body.theme-light .bond-codin-upload-btn { color: #0A2540; border-color: rgba(10, 37, 64, 0.25); background: rgba(10, 37, 64, 0.06); }
+        body.theme-light .bond-codin-header-bar { background: linear-gradient(90deg, #0A2540, #143A5E); }
+        body.theme-light .bond-codin-brand { color: #F4F6F8; }
+        body.theme-light .bond-codin-brand span { color: #C89B3C; }
+        body.theme-light .bond-codin-back-btn { color: #F4F6F8; border-color: rgba(200, 155, 60, 0.35); }
 
         /* Bond Codin 历史项样式 */
         .history-item.bond-codin-history {
-            border-left: 3px solid #bb86fc;
-            background: rgba(124, 77, 255, 0.05);
+            border-left: 3px solid #C89B3C;
+            background: rgba(200, 155, 60, 0.05);
         }
         .history-item.bond-codin-history:hover {
-            background: rgba(124, 77, 255, 0.1);
+            background: rgba(200, 155, 60, 0.1);
         }
         .history-item.bond-codin-history.active {
-            background: rgba(124, 77, 255, 0.15);
-            border-left-color: #7c4dff;
+            background: rgba(200, 155, 60, 0.12);
+            border-left-color: #0A2540;
         }
 
         /* ===== 发行智能助手入口按钮 ===== */
@@ -2124,6 +2103,402 @@
             .bubble { box-shadow: none; border: 1px solid #ccc; background: white !important; color: #333 !important; }
             .ai .bubble::before { display: none; }
         }
+
+        .icon {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2;
+            vertical-align: middle;
+            display: inline-flex;
+            flex-shrink: 0;
+        }
+        button .icon, .btn .icon {
+            margin-right: 5px;
+        }
+        .action-btn .icon {
+            width: 14px;
+            height: 14px;
+        }
+        .template-btn .icon {
+            width: 12px;
+            height: 12px;
+            margin-right: 4px;
+        }
+        .foldable-title .icon, .template-title .icon {
+            width: 12px;
+            height: 12px;
+        }
+        .modal h3 .icon, .modal h4 .icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+        }
+        option .icon {
+            display: none;
+        }
+    
+
+        /* ===== 全局金融专业风格覆盖 ===== */
+        .chat-header {
+            background: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+        .chat-header::after { display: none; }
+        .header-clock {
+            color: var(--text-muted);
+            text-shadow: none;
+            font-family: var(--font-mono);
+        }
+        .model-status {
+            color: var(--success);
+            font-family: var(--font-mono);
+        }
+        .status-dot {
+            box-shadow: none;
+            animation: none;
+        }
+        .status-dot::after { display: none; }
+        .model-switch {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+            padding: 5px 10px;
+        }
+        .model-switch:focus { border-color: var(--accent-color); }
+
+        .export-btn {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-sub);
+            font-size: 12px;
+            padding: 6px 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .export-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(10, 37, 64, 0.03);
+        }
+        .export-dropdown {
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+        }
+        .export-dropdown div {
+            color: var(--text-sub);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+        }
+        .export-dropdown div:hover {
+            background: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        .theme-switcher {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-sub);
+            font-size: 12px;
+            padding: 6px 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .theme-switcher:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .messages-container {
+            background: var(--chat-bg);
+        }
+        .ai-avatar {
+            background: var(--accent-color);
+            color: #FFFFFF;
+            box-shadow: var(--shadow-sm);
+        }
+        .bubble {
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+        .user .bubble {
+            background: var(--user-msg-bg);
+            color: #FFFFFF;
+            border: none;
+        }
+        .user .bubble::after { display: none; }
+        .ai .bubble {
+            background: var(--ai-msg-bg);
+            color: var(--text-main);
+        }
+        .ai .bubble::after { display: none; }
+        .status-info {
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+        .status-info span {
+            background: rgba(10, 37, 64, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .input-area {
+            background: var(--input-bg);
+            border-top: 1px solid var(--border-color);
+        }
+        .input-wrapper {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+        }
+        .input-wrapper:focus-within {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(10, 37, 64, 0.08), var(--shadow-md);
+        }
+        .mode-select {
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            font-size: 12px;
+        }
+        .upload-btn {
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            padding: 8px;
+        }
+        .upload-btn:hover { color: var(--accent-color); }
+        .send-btn {
+            background: var(--accent-color);
+            color: #FFFFFF;
+            box-shadow: var(--shadow-sm);
+        }
+        .send-btn:hover {
+            background: var(--accent-secondary);
+            transform: translateY(-1px);
+        }
+
+        .template-btn {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-sub);
+            font-size: 12px;
+            padding: 6px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .template-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(10, 37, 64, 0.03);
+        }
+
+        .clear-data-btn {
+            width: 90%;
+            background: var(--input-bg);
+            border: 1px solid rgba(197, 48, 48, 0.3);
+            border-radius: var(--radius-md);
+            color: var(--danger);
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .clear-data-btn:hover {
+            background: rgba(197, 48, 48, 0.06);
+            border-color: var(--danger);
+        }
+
+        .action-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+        }
+        .action-btn:hover {
+            background: rgba(10, 37, 64, 0.06);
+            color: var(--text-main);
+            transform: none;
+            filter: none;
+        }
+        .action-btn.del:hover {
+            background: rgba(197, 48, 48, 0.08);
+            color: var(--danger);
+            filter: none;
+        }
+
+        .market-item {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 8px;
+        }
+        .market-name { color: var(--text-muted); }
+        .market-value { color: var(--text-main); }
+        .market-up { color: var(--danger); }
+        .market-down { color: var(--success); }
+
+        .kb-item {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+        }
+        .kb-item:hover { border-color: var(--border-hover); }
+        .kb-toggle { color: var(--text-sub); }
+
+        .data-card {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            backdrop-filter: none;
+        }
+        .data-card::before { display: none; }
+
+        .think-box {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-color);
+            border-radius: var(--radius-md);
+        }
+
+        .modal-overlay {
+            background: rgba(10, 37, 64, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        .modal {
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+        }
+        .modal::before { display: none; }
+        .modal h3, .modal h4 {
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-group label { color: var(--text-sub); }
+        .form-group input, .form-group select, .form-group textarea {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(10, 37, 64, 0.08);
+        }
+        .modal-btn {
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .modal-btn.primary {
+            background: var(--accent-color);
+            color: #FFFFFF;
+        }
+        .modal-btn.primary:hover { background: var(--accent-secondary); }
+        .modal-btn.secondary {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-sub);
+        }
+        .modal-btn.secondary:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .stats-overlay { background: rgba(10, 37, 64, 0.5); }
+        .stats-box {
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+        }
+        .stat-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+        }
+        .stat-value {
+            color: var(--accent-color);
+            text-shadow: none;
+            font-family: var(--font-mono);
+        }
+        .stat-label { color: var(--text-muted); }
+
+        .chart-overlay { background: rgba(10, 37, 64, 0.5); }
+        .chart-box {
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .bond-codin-panel { background: var(--bg-color); }
+        .bond-codin-header-bar {
+            background: var(--accent-color);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .bond-codin-brand { color: #FFFFFF; }
+        .bond-codin-back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #FFFFFF;
+        }
+        .bond-codin-back-btn:hover { background: rgba(255,255,255,0.2); }
+        .bond-codin-nav-btn {
+            background: rgba(10, 37, 64, 0.04);
+            border: 1px solid var(--border-color);
+            color: var(--text-sub);
+        }
+        .bond-codin-nav-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(10, 37, 64, 0.06);
+        }
+
+        .table-viz-btn {
+            background: var(--accent-color);
+            color: #FFFFFF;
+            border-radius: var(--radius-md);
+        }
+        .table-viz-btn:hover { background: var(--accent-secondary); }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(10, 37, 64, 0.15);
+            border: none;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(10, 37, 64, 0.3); }
+        ::selection {
+            background: rgba(10, 37, 64, 0.12);
+            color: var(--text-main);
+        }
+
+        .typing span {
+            background: var(--accent-color);
+            box-shadow: none;
+        }
+
     </style>
 </head>
 <body>
@@ -2131,14 +2506,14 @@
     <aside class="sidebar">
         <div class="brand-section">
             <img src="logo.png" alt="CCDC Logo" class="brand-logo">
-            <div class="brand-tagline">智能金融助手 · 中债发行AI大脑</div>
+            <div class="brand-tagline">智能金融助手 · <strong>中债发行AI大脑</strong></div>
             <div class="system-status-bar">
                 <div class="sys-indicator"><span class="sys-dot"></span>SYSTEM ONLINE</div>
                 <span id="sysClock">00:00:00</span>
             </div>
         </div>
-        <button class="new-chat-btn" onclick="startNewChat()">+ 开启新分析会话</button>
-        <button class="config-btn" onclick="openConfigModal()">⚙️ API 配置</button>
+        <button class="new-chat-btn" onclick="startNewChat()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>开启新分析会话</button>
+        <button class="config-btn" onclick="openConfigModal()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> API 配置</button>
         <button class="issue-assistant-nav-btn" onclick="enterIssueAssistantMode()" title="进入发行智能助手">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
             发行智能助手
@@ -2146,16 +2521,16 @@
         
         <div class="foldable-panel" id="panel-templates">
             <div class="foldable-header" onclick="toggleFold('panel-templates')">
-                <div class="foldable-title">📋 快捷模板</div>
-                <span class="foldable-arrow">▼</span>
+                <div class="foldable-title"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> 快捷模板</div>
+                <span class="foldable-arrow"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
             </div>
             <div class="foldable-content">
                 <div class="template-list">
-                    <button class="template-btn" onclick="applyTemplate('bond')">📊 债券定价</button>
-                    <button class="template-btn" onclick="applyTemplate('credit')">🔍 信用分析</button>
-                    <button class="template-btn" onclick="applyTemplate('prospectus')">📄 募集书解读</button>
-                    <button class="template-btn" onclick="applyTemplate('macro')">🌍 宏观点评</button>
-                    <button class="template-btn" onclick="applyTemplate('curve')">📈 收益率曲线</button>
+                    <button class="template-btn" onclick="applyTemplate('bond')"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> 债券定价</button>
+                    <button class="template-btn" onclick="applyTemplate('credit')"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> 信用分析</button>
+                    <button class="template-btn" onclick="applyTemplate('prospectus')"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> 募集书解读</button>
+                    <button class="template-btn" onclick="applyTemplate('macro')"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> 宏观点评</button>
+                    <button class="template-btn" onclick="applyTemplate('curve')"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> 收益率曲线</button>
                 </div>
             </div>
         </div>
@@ -2163,8 +2538,8 @@
         <!-- 实时市场数据面板 -->
         <div class="foldable-panel collapsed" id="panel-market">
             <div class="foldable-header" onclick="toggleFold('panel-market')">
-                <div class="foldable-title">📈 中债市场快讯 <span style="font-size:9px;color:var(--success);text-transform:none;letter-spacing:0;">● LIVE</span></div>
-                <span class="foldable-arrow">▼</span>
+                <div class="foldable-title"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> 中债市场快讯 <span style="font-size:9px;color:var(--success);text-transform:none;letter-spacing:0;"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" style="width:8px;height:8px;vertical-align:middle;margin-right:2px;"><circle cx="12" cy="12" r="10"/></svg> LIVE</span></div>
+                <span class="foldable-arrow"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
             </div>
             <div class="foldable-content">
                 <div class="market-grid" id="marketGrid">
@@ -2179,20 +2554,20 @@
         <!-- 知识库区域 -->
         <div class="foldable-panel collapsed" id="panel-kb">
             <div class="foldable-header" onclick="toggleFold('panel-kb')">
-                <div class="foldable-title">📚 知识库</div>
-                <span class="foldable-arrow">▼</span>
+                <div class="foldable-title"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 知识库</div>
+                <span class="foldable-arrow"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
             </div>
             <div class="foldable-content">
                 <div class="kb-list" id="kbList"></div>
                 <button class="config-btn" onclick="document.getElementById('kbInput').click()">+ 添加文档</button>
-                <button class="bond-codin-nav-btn" onclick="enterBondCodinMode()" title="进入代码审计与架构分析模式">💻 Bond Codin · 编程大师</button>
+                <button class="bond-codin-nav-btn" onclick="enterBondCodinMode()" title="进入代码审计与架构分析模式"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Bond Codin · 编程大师</button>
                 <input type="file" id="kbInput" style="display:none" accept=".txt,.md,.csv,.json,.docx,.pdf,.png,.jpg,.jpeg,.gif,.webp,.bmp" onchange="handleKbUpload(event)">
                 <label class="kb-toggle"><input type="checkbox" id="kbToggle" onchange="toggleKb()"> 启用知识库检索</label>
             </div>
         </div>
         
         <div class="history-list" id="historyList"></div>
-        <button class="clear-data-btn" onclick="clearAllData()">🗑️ 清空所有本地数据</button>
+        <button class="clear-data-btn" onclick="clearAllData()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> 清空所有本地数据</button>
     </aside>
 
     <main class="main-area">
@@ -2206,20 +2581,20 @@
             </div>
             <div class="header-actions">
                 <div class="header-clock" id="headerClock">00:00:00</div>
-                <button class="theme-switcher" onclick="cycleTheme()" title="切换主题">🎨 <span id="themeLabel">HUD</span></button>
-                <button class="theme-switcher" onclick="openStatsModal()" title="使用统计">📊 统计</button>
+                <button class="theme-switcher" onclick="cycleTheme()" title="切换主题"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.01 17.461 2 12 2z"/></svg> <span id="themeLabel">浅色</span></button>
+                <button class="theme-switcher" onclick="openStatsModal()" title="使用统计"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> 统计</button>
                 <div class="export-wrap">
-                    <button class="export-btn" onclick="toggleExportMenu(event)">📤 导出</button>
+                    <button class="export-btn" onclick="toggleExportMenu(event)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 导出</button>
                     <div class="export-dropdown" id="exportDropdown">
-                        <div onclick="exportMarkdown()">📝 导出 Markdown</div>
-                        <div onclick="exportWord()">📘 导出 Word</div>
-                        <div onclick="exportPrint()">🖨️ 打印 / PDF</div>
-                        <div onclick="exportBackup()">💾 备份数据</div>
-                        <div onclick="importBackupPrompt()">📥 恢复数据</div>
+                        <div onclick="exportMarkdown()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 导出 Markdown</div>
+                        <div onclick="exportWord()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 导出 Word</div>
+                        <div onclick="exportPrint()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> 打印 / PDF</div>
+                        <div onclick="exportBackup()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 备份数据</div>
+                        <div onclick="importBackupPrompt()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 恢复数据</div>
                     </div>
                 </div>
                 <div style="font-size: 10px; color: var(--text-sub); letter-spacing: 2px; display: flex; align-items: center; font-family: var(--font-tech);">
-                    <span style="margin-right: 6px; color: var(--accent-color); text-shadow: 0 0 8px rgba(0,229,255,0.3);">◈</span> 实时金融大脑
+                    <span style="margin-right: 6px; color: var(--accent-color); text-shadow: 0 0 8px rgba(10, 37, 64,0.3);"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" style="width:10px;height:10px;vertical-align:middle;margin-right:3px;"><polygon points="12,2 22,12 12,22 2,12"/></svg></span> 实时金融大脑
                 </div>
             </div>
         </header>
@@ -2228,7 +2603,7 @@
             <div class="message ai">
                 <div class="ai-avatar">AI</div>
                 <div class="bubble">
-                    <div style="font-family: var(--font-tech); color: var(--accent-color); font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;">◈ CCDC 智能金融助手 · 系统已就绪</div>
+                    <div style="font-family: var(--font-tech); color: var(--accent-color); font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" style="width:10px;height:10px;vertical-align:middle;margin-right:3px;"><polygon points="12,2 22,12 12,22 2,12"/></svg> CCDC 智能金融助手 · 系统已就绪</div>
                     您好，我是 <b>AI智能机器人助手小发</b>，由中央结算公司赋能的智能金融分析终端。<br><br>
                     请录入指令，我可以为您：<br>
                     • 进行 <b>债券定价预测</b> 与市场基准分析<br>
@@ -2244,15 +2619,15 @@
             <div class="input-wrapper" id="dropZone">
                 <div class="mode-selector">
                     <select id="modeSelect" class="mode-select" onchange="onModeChange(this.value)">
-                        <option value="chat">💬 标准</option>
-                        <option value="think">🧠 思考</option>
-                        <option value="predict">📊 预测</option>
+                        <option value="chat"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> 标准</option>
+                        <option value="think"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.74 2.74 0 0 1-3.08-3.42 3.26 3.26 0 0 1 .18-.65L2.95 13.6a2.48 2.48 0 0 1 0-3.2l1.99-2.67A3 3 0 0 1 5 6.59V4.5A2.5 2.5 0 0 1 7.5 2h2z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.74 2.74 0 0 0 3.08-3.42 3.26 3.26 0 0 0-.18-.65l1.99-2.67a2.48 2.48 0 0 0 0-3.2l-1.99-2.67A3 3 0 0 0 19 6.59V4.5A2.5 2.5 0 0 0 16.5 2h-2z"/></svg> 思考</option>
+                        <option value="predict"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> 预测</option>
                     </select>
                 </div>
                 <!-- Bond Codin 代码粘贴区 -->
                 <div class="bond-codin-code-area" id="bondCodinCodeArea">
                     <div class="bond-codin-header">
-                        <span class="bond-codin-label">⌘ 粘贴待审计代码</span>
+                        <span class="bond-codin-label"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="/></svg> 粘贴待审计代码</span>
                         <select id="bondCodinLang" class="bond-codin-lang-select">
                             <option value="java">Java</option>
                             <option value="sql">SQL</option>
@@ -2269,7 +2644,7 @@ Bond Codin将基于中债金科企业级战略规划三层架构规范进行代�
                 </div>
                 <textarea id="userInput" placeholder="输入分析指令、粘贴文本或拖拽文件到此处..." rows="1" onkeydown="handleKeyDown(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onpaste="handlePaste(event)"></textarea>
                 <input type="file" id="fileInput" style="display:none" accept=".txt,.md,.csv,.json" onchange="handleFileSelect(event)">
-                <button class="upload-btn" onclick="document.getElementById('fileInput').click()" title="上传文本文件">📎</button>
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()" title="上传文本文件"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
                 <button class="send-btn" id="sendBtn" onclick="sendMessage()">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -2282,17 +2657,17 @@ Bond Codin将基于中债金科企业级战略规划三层架构规范进行代�
         <!-- Bond Codin 独立面板 -->
         <div class="bond-codin-panel" id="bondCodinPanel">
             <div class="bond-codin-header-bar">
-                <div class="bond-codin-brand">◈ BOND CODIN <span>中债系统编程大师</span></div>
-                <button class="bond-codin-back-btn" onclick="exitBondCodinMode()">← 返回金融助手</button>
+                <div class="bond-codin-brand"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" style="width:10px;height:10px;vertical-align:middle;margin-right:3px;"><polygon points="12,2 22,12 12,22 2,12"/></svg> BOND CODIN <span>中债系统编程大师</span></div>
+                <button class="bond-codin-back-btn" onclick="exitBondCodinMode()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;vertical-align:middle;margin-right:2px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> 返回金融助手</button>
             </div>
             <div class="bond-codin-workspace">
                 <div class="bond-codin-messages" id="bondCodinMessages"></div>
                 <div class="bond-codin-input-area">
                     <div class="bond-codin-code-box">
                         <div class="bond-codin-code-header">
-                            <span class="bond-codin-code-label">⌘ 粘贴待审计代码</span>
+                            <span class="bond-codin-code-label"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="/></svg> 粘贴待审计代码</span>
                             <div style="display:flex;align-items:center;">
-                                <button class="bond-codin-upload-btn" onclick="document.getElementById('bondCodinFileInput').click()" title="上传 .java/.py/.js/.go 等代码文件">📁 上传代码</button>
+                                <button class="bond-codin-upload-btn" onclick="document.getElementById('bondCodinFileInput').click()" title="上传 .java/.py/.js/.go 等代码文件"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> 上传代码</button>
                                 <select id="bondCodinLang2" class="bond-codin-lang-select">
                                     <option value="java">Java</option>
                                     <option value="sql">SQL</option>
@@ -3011,7 +3386,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
     <!-- 配置弹窗 -->
     <div class="modal-overlay" id="configModal">
         <div class="modal">
-            <h3>⚙️ 个人配置</h3>
+            <h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 个人配置</h3>
             <div class="form-group">
                 <label>当前登录用户</label>
                 <div id="cfgUsername" style="font-family: var(--font-mono); color: var(--accent-color); font-size: 14px; padding: 10px 0;">-</div>
@@ -3038,7 +3413,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
     <!-- 登录/注册弹窗 -->
     <div class="modal-overlay active" id="authModal">
         <div class="modal" style="width: 380px;">
-            <h3>🔐 登录 / 注册</h3>
+            <h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 登录 / 注册</h3>
             <div class="form-group">
                 <label>用户名</label>
                 <input type="text" id="authUsername" placeholder="请输入用户名（至少3位）">
@@ -3063,7 +3438,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
     <div class="stats-overlay" id="statsOverlay" onclick="closeStatsModal(event)">
         <div class="stats-box" onclick="event.stopPropagation()">
             <div class="chart-header">
-                <h4>📊 使用统计</h4>
+                <h4><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> 使用统计</h4>
                 <button class="chart-close" onclick="closeStatsModal()">&times;</button>
             </div>
             <div class="stats-grid">
@@ -3073,8 +3448,8 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 <div class="stat-card"><div class="stat-value" id="statTime">0h</div><div class="stat-label">活跃时长</div></div>
             </div>
             <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--border-color);">
-                <button class="modal-btn secondary" onclick="exportBackup()" style="margin-right:8px;">💾 备份数据</button>
-                <button class="modal-btn secondary" onclick="importBackupPrompt()">📥 恢复数据</button>
+                <button class="modal-btn secondary" onclick="exportBackup()" style="margin-right:8px;"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 备份数据</button>
+                <button class="modal-btn secondary" onclick="importBackupPrompt()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 恢复数据</button>
                 <button class="modal-btn primary" onclick="closeStatsModal()" style="float:right;">关闭</button>
             </div>
         </div>
@@ -3084,7 +3459,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
     <div class="chart-overlay" id="chartOverlay" onclick="closeChart(event)">
         <div class="chart-box" onclick="event.stopPropagation()">
             <div class="chart-header">
-                <h4>📊 数据可视化</h4>
+                <h4><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> 数据可视化</h4>
                 <button class="chart-close" onclick="closeChart()">&times;</button>
             </div>
             <div class="chart-type-btns">
@@ -3209,7 +3584,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 const tag = idx === 0 ? 'th' : 'td';
                 html += '<tr>' + cells.map(c => `<${tag}>${escapeHtml(c).replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')}</${tag}>`).join('') + '</tr>';
             });
-            html += '</table><button class="table-viz-btn" onclick="openChartFromTable(this)">📊 可视化</button></div>';
+            html += '</table><button class="table-viz-btn" onclick="openChartFromTable(this)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> 可视化</button></div>';
             return html;
         }
 
@@ -3361,7 +3736,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
             container.innerHTML = '';
             const welcome = document.createElement('div');
             welcome.className = 'message ai';
-            welcome.innerHTML = `<div class="ai-avatar" style="background: linear-gradient(135deg, #7c4dff, #03dac6);">BC</div><div class="bubble"><div style="font-family: var(--font-tech); color: #bb86fc; font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;">◈ Bond Codin · 中债系统编程大师</div>欢迎使用 Bond Codin！我可以帮你：<br><br>• <b>代码审计</b>：扫描空指针、并发安全、SQL注入、事务边界、N+1查询<br>• <b>架构评审</b>：评估 Service/Logic/Mapper 分层合规性、耦合度、扩展性<br>• <b>分布式改造</b>：设计微服务拆分方案、DDD 限界上下文、Saga 分布式事务<br>• <b>性能优化</b>：JVM 调优、SQL 执行计划分析、缓存策略、异步化改造<br><br>请在上方粘贴代码，输入分析指令后点击发送。</div><div class="status-info"><span>Mode: Bond Codin</span><span>Architecture Audit Engine v1.0</span></div>`;
+            welcome.innerHTML = `<div class="ai-avatar" style="background: linear-gradient(135deg, #0A2540, #C89B3C);">BC</div><div class="bubble"><div style="font-family: var(--font-tech); color: #C89B3C; font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" style="width:10px;height:10px;vertical-align:middle;margin-right:3px;"><polygon points="12,2 22,12 12,22 2,12"/></svg> Bond Codin · 中债系统编程大师</div>欢迎使用 Bond Codin！我可以帮你：<br><br>• <b>代码审计</b>：扫描空指针、并发安全、SQL注入、事务边界、N+1查询<br>• <b>架构评审</b>：评估 Service/Logic/Mapper 分层合规性、耦合度、扩展性<br>• <b>分布式改造</b>：设计微服务拆分方案、DDD 限界上下文、Saga 分布式事务<br>• <b>性能优化</b>：JVM 调优、SQL 执行计划分析、缓存策略、异步化改造<br><br>请在上方粘贴代码，输入分析指令后点击发送。</div><div class="status-info"><span>Mode: Bond Codin</span><span>Architecture Audit Engine v1.0</span></div>`;
             container.appendChild(welcome);
         }
 
@@ -3432,7 +3807,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
             aiMsg.className = 'message ai';
             aiMsg.id = loadingId;
             aiMsg.innerHTML = `
-                <div class="ai-avatar" style="background: linear-gradient(135deg, #7c4dff, #03dac6);">BC</div>
+                <div class="ai-avatar" style="background: linear-gradient(135deg, #0A2540, #C89B3C);">BC</div>
                 <div class="bubble">
                     <details class="think-box" id="think-box-${loadingId}" style="display: none;" open>
                         <summary>
@@ -3684,7 +4059,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     series: [{
                         type: 'pie', radius: ['40%', '70%'],
                         data: pieData,
-                        label: { color: '#c9d1d9' }
+                        label: { color: '#0F172A' }
                     }]
                 };
             } else {
@@ -3698,10 +4073,10 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 option = {
                     backgroundColor: 'transparent',
                     tooltip: { trigger: 'axis' },
-                    legend: { data: seriesNames, textStyle: { color: '#8b949e' } },
+                    legend: { data: seriesNames, textStyle: { color: '#5A677A' } },
                     grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-                    xAxis: { type: 'category', data: categories, axisLine: { lineStyle: { color: '#30363d' } }, axisLabel: { color: '#8b949e' } },
-                    yAxis: { type: 'value', axisLine: { lineStyle: { color: '#30363d' } }, axisLabel: { color: '#8b949e' }, splitLine: { lineStyle: { color: '#21262d' } } },
+                    xAxis: { type: 'category', data: categories, axisLine: { lineStyle: { color: '#DEE2E7' } }, axisLabel: { color: '#5A677A' } },
+                    yAxis: { type: 'value', axisLine: { lineStyle: { color: '#DEE2E7' } }, axisLabel: { color: '#5A677A' }, splitLine: { lineStyle: { color: '#EEF1F5' } } },
                     series
                 };
             }
@@ -3869,7 +4244,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
             container.innerHTML = '';
             const welcome = document.createElement('div');
             welcome.className = 'message ai';
-            welcome.innerHTML = `<div class="ai-avatar">AI</div><div class="bubble"><div style="font-family: var(--font-tech); color: var(--accent-color); font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;">◈ CCDC 智能金融助手 · 新会话</div>您好，我是AI智能机器人小发，您的专属私人债券助手~竭诚为您服务。</div><div class="status-info"><span>Mode: Hybrid</span><span>CCDC Neural Engine</span></div>`;
+            welcome.innerHTML = `<div class="ai-avatar">AI</div><div class="bubble"><div style="font-family: var(--font-tech); color: var(--accent-color); font-size: 13px; margin-bottom: 10px; letter-spacing: 1px;"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" style="width:10px;height:10px;vertical-align:middle;margin-right:3px;"><polygon points="12,2 22,12 12,22 2,12"/></svg> CCDC 智能金融助手 · 新会话</div>您好，我是AI智能机器人小发，您的专属私人债券助手~竭诚为您服务。</div><div class="status-info"><span>Mode: Hybrid</span><span>CCDC Neural Engine</span></div>`;
             container.appendChild(welcome);
             renderHistory();
         }
@@ -4071,7 +4446,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 } else if (msg.includes("API 接口异常") || msg.includes("invalid")) {
                     displayMsg = msg;
                 }
-                if (answerBox) answerBox.innerHTML = `<span style="color:#f85149;">❌ ${escapeHtml(displayMsg)}</span>`;
+                if (answerBox) answerBox.innerHTML = `<span style="color:#f85149;"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> ${escapeHtml(displayMsg)}</span>`;
                 if (statusState) setTextContent(statusState, "请求失败");
             } finally {
                 btn.disabled = false;
@@ -4142,15 +4517,15 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
             const list = document.getElementById('historyList');
             list.innerHTML = chatHistory.map(chat => {
                 const isBC = chat.mode === 'bondcodin';
-                const icon = isBC ? '💻 ' : '';
+                const icon = isBC ? '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> ' : '';
                 const bcClass = isBC ? 'bond-codin-history' : '';
                 return `
                 <div class="history-item ${chat.id === currentChatId ? 'active' : ''} ${chat.pinned ? 'pinned' : ''} ${bcClass}" onclick="loadChat(${chat.id})">
                     <div class="history-title" title="${escapeHtml(chat.title)}">${icon}${escapeHtml(chat.title)}</div>
                     <div class="item-actions">
-                        <button class="action-btn" onclick="togglePin(${chat.id}, event)" title="置顶">${chat.pinned ? '📍' : '📌'}</button>
-                        <button class="action-btn" onclick="renameChat(${chat.id}, event)" title="重命名">✏️</button>
-                        <button class="action-btn del" onclick="deleteChat(${chat.id}, event)" title="删除">🗑️</button>
+                        <button class="action-btn" onclick="togglePin(${chat.id}, event)" title="置顶">${chat.pinned ? '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' : '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>'}</button>
+                        <button class="action-btn" onclick="renameChat(${chat.id}, event)" title="重命名"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                        <button class="action-btn del" onclick="deleteChat(${chat.id}, event)" title="删除"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                     </div>
                 </div>
             `}).join('');
@@ -4203,7 +4578,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     }
                     const aiWrapper = document.createElement('div');
                     aiWrapper.className = 'message ai';
-                    aiWrapper.innerHTML = `<div class="ai-avatar" style="background: linear-gradient(135deg, #7c4dff, #03dac6);">BC</div><div class="bubble">${rHtml}<div class="answer-content">${escapeHtml(msg.a).replace(/\n/g, '<br>')}</div></div><div class="status-info"><span>History Data</span></div>`;
+                    aiWrapper.innerHTML = `<div class="ai-avatar" style="background: linear-gradient(135deg, #0A2540, #C89B3C);">BC</div><div class="bubble">${rHtml}<div class="answer-content">${escapeHtml(msg.a).replace(/\n/g, '<br>')}</div></div><div class="status-info"><span>History Data</span></div>`;
                     container.appendChild(aiWrapper);
                 });
                 renderHistory();
@@ -4229,7 +4604,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
         }
 
         async function clearAllData() {
-            if (!confirm("⚠️ 确定要清空所有数据吗？\n\n此操作不可撤销！")) return;
+            if (!confirm("<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> 确定要清空所有数据吗？\n\n此操作不可撤销！")) return;
             for (const chat of chatHistory) {
                 try { await api('/api/history/' + chat.id, { method: 'DELETE' }); } catch {}
             }
@@ -4281,15 +4656,15 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
 
         // ================= F4 主题切换 =================
         const THEME_KEY = 'finChatTheme_v3';
-        const THEMES = ['dark', 'light', 'cyber'];
-        const THEME_LABELS = { dark: '深色', light: '浅色', cyber: '动感' };
+        const THEMES = ['light', 'dark'];
+        const THEME_LABELS = { light: '浅色', dark: '深色' };
         function loadTheme() {
             const t = localStorage.getItem(THEME_KEY) || 'light';
-            document.body.classList.remove('theme-light', 'theme-cyber');
+            document.body.classList.remove('theme-light', 'theme-dark');
             if (t === 'light') document.body.classList.add('theme-light');
-            if (t === 'cyber') document.body.classList.add('theme-cyber');
+            if (t === 'dark') document.body.classList.add('theme-dark');
             const lbl = document.getElementById('themeLabel');
-            if (lbl) lbl.textContent = THEME_LABELS[t] || 'HUD';
+            if (lbl) lbl.textContent = THEME_LABELS[t] || '浅色';
         }
         function cycleTheme() {
             const current = localStorage.getItem(THEME_KEY) || 'light';
@@ -4334,7 +4709,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
         async function getSecurePassword() {
             let pwd = sessionStorage.getItem(ENCRYPTION_KEY);
             if (!pwd) {
-                pwd = prompt('🔐 请设置本地数据加密密码（仅保存在当前会话）：');
+                pwd = prompt('<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 请设置本地数据加密密码（仅保存在当前会话）：');
                 if (!pwd) return null;
                 sessionStorage.setItem(ENCRYPTION_KEY, pwd);
             }
@@ -4388,7 +4763,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
             a.download = `CCDC_AI_Backup_${new Date().toISOString().slice(0,10)}.json`;
             a.click();
             URL.revokeObjectURL(url);
-            alert('✅ 备份已导出');
+            alert('<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> 备份已导出');
         }
         function importBackupPrompt() {
             const input = document.createElement('input');
@@ -4414,10 +4789,10 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     loadTheme();
                     renderHistory();
                     updateModelSwitchUI();
-                    alert('✅ 数据恢复成功');
+                    alert('<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> 数据恢复成功');
                     location.reload();
                 } catch (err) {
-                    alert('❌ 恢复失败: ' + err.message);
+                    alert('<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> 恢复失败: ' + err.message);
                 }
             };
             input.click();
@@ -4597,7 +4972,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
             compareMode = !compareMode;
             const btn = document.getElementById('compareBtn');
             if (btn) btn.style.borderColor = compareMode ? 'var(--accent-color)' : 'var(--border-color)';
-            if (compareMode) alert('🔀 多模型对比模式已开启\n下次发送消息时将同时向两个模型提问');
+            if (compareMode) alert('<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg> 多模型对比模式已开启\n下次发送消息时将同时向两个模型提问');
         }
         // 注入对比模式按钮到输入区（动态创建）
         (function injectCompareBtn() {
@@ -4607,7 +4982,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
             btn.id = 'compareBtn';
             btn.className = 'upload-btn';
             btn.title = '多模型对比';
-            btn.innerHTML = '🔀';
+            btn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>';
             btn.onclick = toggleCompareMode;
             inputArea.insertBefore(btn, inputArea.querySelector('.send-btn'));
         })();
@@ -4734,7 +5109,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 localStorage.setItem('finChatVault_v3', enc);
                 localStorage.removeItem(HISTORY_KEY);
                 localStorage.removeItem(CONFIG_KEY);
-                alert('🔐 本地数据已加密存储。原明文数据已清除。下次加载时需要输入密码解密。');
+                alert('<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 本地数据已加密存储。原明文数据已清除。下次加载时需要输入密码解密。');
             } catch (err) { alert('加密失败: ' + err.message); }
         }
         async function decryptLocalData() {
@@ -4751,7 +5126,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 if (data.personas) savePersonas(data.personas);
                 if (data.kbFiles) saveKbFiles(data.kbFiles);
                 localStorage.removeItem('finChatVault_v3');
-                alert('🔓 数据解密成功，已恢复明文存储。');
+                alert('<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> 数据解密成功，已恢复明文存储。');
                 location.reload();
             } catch (err) { alert('解密失败: ' + err.message); }
         }
@@ -4859,7 +5234,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     saveChatToHistory(text, ans, '');
                 } catch (err) {
                     const bubble = document.getElementById('compare-bubble-' + idx);
-                    if (bubble) bubble.innerHTML = `<span style="color:var(--danger)">❌ ${escapeHtml(err.message)}</span>`;
+                    if (bubble) bubble.innerHTML = `<span style="color:var(--danger)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> ${escapeHtml(err.message)}</span>`;
                 }
             });
         }
@@ -5078,7 +5453,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 const data = await apiPostForm('/api/announcement/extract', form);
                 renderAnnResults(data);
             } catch (err) {
-                document.getElementById('annResultBox').innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">提取失败：' + err.message + '</div>';
+                document.getElementById('annResultBox').innerHTML = '<div class="issue-result-empty" style="color:#C53030">提取失败：' + err.message + '</div>';
             }
             btn.disabled = false;
         }
@@ -5086,7 +5461,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
         function renderAnnResults(resp) {
             const box = document.getElementById('annResultBox');
             if (resp.code !== 200) {
-                box.innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">' + (resp.message || '失败') + '</div>';
+                box.innerHTML = '<div class="issue-result-empty" style="color:#C53030">' + (resp.message || '失败') + '</div>';
                 return;
             }
             const results = resp.data.results || [];
@@ -5104,7 +5479,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 html += `<div style="color:var(--text-sub);font-size:12px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">状态：<span class="issue-status-badge ${statusClass}">${statusText}</span></div>`;
 
                 if (r.status !== 'extracted') {
-                    html += `<div style="color:#ff6b6b;font-size:13px;">${r.error || '提取失败'}</div>`;
+                    html += `<div style="color:#C53030;font-size:13px;">${r.error || '提取失败'}</div>`;
                     html += `</div>`;
                     return;
                 }
@@ -5173,7 +5548,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 const data = await apiPostForm('/api/bidding-results/extract', form);
                 renderBidResults(data);
             } catch (err) {
-                document.getElementById('bidResultBox').innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">提取失败：' + err.message + '</div>';
+                document.getElementById('bidResultBox').innerHTML = '<div class="issue-result-empty" style="color:#C53030">提取失败：' + err.message + '</div>';
             }
             btn.disabled = false;
         }
@@ -5181,7 +5556,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
         function renderBidResults(resp) {
             const box = document.getElementById('bidResultBox');
             if (resp.code !== 200) {
-                box.innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">' + (resp.message || '失败') + '</div>';
+                box.innerHTML = '<div class="issue-result-empty" style="color:#C53030">' + (resp.message || '失败') + '</div>';
                 return;
             }
             const results = resp.data.results || [];
@@ -5194,7 +5569,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 const bidStatusText = r.status === 'extracted' ? '成功' : '失败';
                 html += `<div class="issue-card-title">${e.file_name || '文档'} <span class="issue-status-badge ${bidStatusClass}">${bidStatusText}</span></div>`;
                 if (r.status !== 'extracted') {
-                    html += `<div style="color:#ff6b6b;font-size:13px;">${r.error || '提取失败'}</div>`;
+                    html += `<div style="color:#C53030;font-size:13px;">${r.error || '提取失败'}</div>`;
                     html += `</div>`;
                     return;
                 }
@@ -5254,7 +5629,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     throw new Error(data.message);
                 }
             } catch (err) {
-                document.getElementById('reportResultBox').innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">' + err.message + '</div>';
+                document.getElementById('reportResultBox').innerHTML = '<div class="issue-result-empty" style="color:#C53030">' + err.message + '</div>';
                 btn.disabled = false;
             }
         }
@@ -5308,7 +5683,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     throw new Error(data.message);
                 }
             } catch (err) {
-                document.getElementById('rpResultBox').innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">' + err.message + '</div>';
+                document.getElementById('rpResultBox').innerHTML = '<div class="issue-result-empty" style="color:#C53030">' + err.message + '</div>';
                 btn.disabled = false;
             }
         }
@@ -5352,7 +5727,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     throw new Error(data.message);
                 }
             } catch (err) {
-                document.getElementById('monResultBox').innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">' + err.message + '</div>';
+                document.getElementById('monResultBox').innerHTML = '<div class="issue-result-empty" style="color:#C53030">' + err.message + '</div>';
                 btn.disabled = false;
             }
         }
@@ -5409,7 +5784,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     throw new Error(data.message);
                 }
             } catch (err) {
-                document.getElementById('fgResultBox').innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">' + err.message + '</div>';
+                document.getElementById('fgResultBox').innerHTML = '<div class="issue-result-empty" style="color:#C53030">' + err.message + '</div>';
                 btn.disabled = false;
             }
         }
@@ -5452,7 +5827,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     throw new Error(data.message);
                 }
             } catch (err) {
-                document.getElementById('blResultBox').innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">' + err.message + '</div>';
+                document.getElementById('blResultBox').innerHTML = '<div class="issue-result-empty" style="color:#C53030">' + err.message + '</div>';
                 btn.disabled = false;
             }
         }
@@ -5508,7 +5883,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     throw new Error(data.message);
                 }
             } catch (err) {
-                document.getElementById('abResultBox').innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">' + err.message + '</div>';
+                document.getElementById('abResultBox').innerHTML = '<div class="issue-result-empty" style="color:#C53030">' + err.message + '</div>';
                 btn.disabled = false;
             }
         }
@@ -5551,7 +5926,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     throw new Error(data.message);
                 }
             } catch (err) {
-                document.getElementById('baResultBox').innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">' + err.message + '</div>';
+                document.getElementById('baResultBox').innerHTML = '<div class="issue-result-empty" style="color:#C53030">' + err.message + '</div>';
                 btn.disabled = false;
             }
         }
@@ -5625,7 +6000,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 renderPdfOcrResult(fullText, totalPages);
             } catch (err) {
                 console.error('PDF OCR error:', err);
-                box.innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">OCR 失败：' + err.message + '</div>';
+                box.innerHTML = '<div class="issue-result-empty" style="color:#C53030">OCR 失败：' + err.message + '</div>';
             }
             btn.disabled = false;
         }
@@ -5688,7 +6063,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     throw new Error(data.message);
                 }
             } catch (err) {
-                document.getElementById('fcResultBox').innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">' + err.message + '</div>';
+                document.getElementById('fcResultBox').innerHTML = '<div class="issue-result-empty" style="color:#C53030">' + err.message + '</div>';
                 btn.disabled = false;
             }
         }
@@ -5738,7 +6113,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     throw new Error(data.message);
                 }
             } catch (err) {
-                document.getElementById('cpResultBox').innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">' + err.message + '</div>';
+                document.getElementById('cpResultBox').innerHTML = '<div class="issue-result-empty" style="color:#C53030">' + err.message + '</div>';
                 btn.disabled = false;
             }
         }
@@ -5794,7 +6169,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     throw new Error(data.message);
                 }
             } catch (err) {
-                document.getElementById('lbResultBox').innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">' + err.message + '</div>';
+                document.getElementById('lbResultBox').innerHTML = '<div class="issue-result-empty" style="color:#C53030">' + err.message + '</div>';
                 btn.disabled = false;
             }
         }
@@ -5872,7 +6247,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                         <td>${r.reference || '-'}</td>
                     </tr>`).join('') + '</tbody></table>';
             } catch (err) {
-                box.innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">加载失败：' + err.message + '</div>';
+                box.innerHTML = '<div class="issue-result-empty" style="color:#C53030">加载失败：' + err.message + '</div>';
             }
         }
 
@@ -5892,7 +6267,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 if (data.code !== 200) throw new Error(data.message);
                 renderHistoryList(type, data.data.items || []);
             } catch (err) {
-                box.innerHTML = '<div class="issue-result-empty" style="color:#ff6b6b">加载失败：' + err.message + '</div>';
+                box.innerHTML = '<div class="issue-result-empty" style="color:#C53030">加载失败：' + err.message + '</div>';
             }
         }
 
@@ -6025,23 +6400,23 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
             padding: 6px 14px;
             background: rgba(0,0,0,0.45);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(0,229,255,0.25);
+            border: 1px solid rgba(10, 37, 64,0.25);
             border-radius: 20px;
             font-family: var(--font-tech), 'Courier New', monospace;
             font-size: 11px;
             color: rgba(255,255,255,0.7);
             letter-spacing: 1px;
-            text-shadow: 0 0 8px rgba(0,229,255,0.3);
+            text-shadow: 0 0 8px rgba(10, 37, 64,0.3);
             pointer-events: auto;
             cursor: default;
             transition: all 0.3s ease;
             user-select: none;
         }
         .ff-watermark:hover {
-            background: rgba(0,0,0,0.7);
-            border-color: rgba(0,229,255,0.6);
+            background: rgba(10, 37, 64, 0.7);
+            border-color: rgba(10, 37, 64,0.6);
             color: rgba(255,255,255,0.95);
-            box-shadow: 0 0 20px rgba(0,229,255,0.2);
+            box-shadow: 0 0 20px rgba(10, 37, 64,0.2);
             transform: translateY(-2px);
         }
         .ff-watermark .ff-icon {
@@ -6060,14 +6435,14 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
         }
         body.theme-light .ff-watermark {
             background: rgba(255,255,255,0.6);
-            border-color: rgba(0,229,255,0.2);
-            color: rgba(0,0,0,0.6);
+            border-color: rgba(10, 37, 64,0.2);
+            color: var(--text-sub);
             text-shadow: none;
         }
         body.theme-light .ff-watermark:hover {
             background: rgba(255,255,255,0.85);
-            border-color: rgba(0,229,255,0.5);
-            color: rgba(0,0,0,0.9);
+            border-color: rgba(10, 37, 64,0.5);
+            color: var(--text-main);
         }
     </style>
 </body>
