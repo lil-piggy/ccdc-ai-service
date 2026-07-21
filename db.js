@@ -69,6 +69,18 @@ async function initDb() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    // 兼容旧表：补充 kb_docs 新增列
+    try {
+      await client.query(`ALTER TABLE kb_docs ADD COLUMN IF NOT EXISTS file_size BIGINT`);
+      await client.query(`ALTER TABLE kb_docs ADD COLUMN IF NOT EXISTS mime_type VARCHAR(100)`);
+      await client.query(`ALTER TABLE kb_docs ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'ready'`);
+      await client.query(`ALTER TABLE kb_docs ADD COLUMN IF NOT EXISTS error_message TEXT`);
+      await client.query(`ALTER TABLE kb_docs ADD COLUMN IF NOT EXISTS total_chars INTEGER DEFAULT 0`);
+      await client.query(`ALTER TABLE kb_docs ADD COLUMN IF NOT EXISTS chunk_count INTEGER DEFAULT 0`);
+      await client.query(`ALTER TABLE kb_docs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`);
+    } catch (e) {
+      console.log('[DB] kb_docs alter table warning:', e.message);
+    }
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS kb_files (
