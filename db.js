@@ -1,5 +1,7 @@
 const { Pool } = require('pg');
 
+let pgvectorEnabled = false;
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL?.includes('render.com') ? { rejectUnauthorized: false } : false
@@ -42,13 +44,72 @@ async function initDb() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    // 启用 pgvector 扩展（如果数据库支持）
+    try {
+      await client.query(`CREATE EXTENSION IF NOT EXISTS vector`);
+      pgvectorEnabled = true;
+      console.log('[DB] pgvector extension ready');
+    } catch (e) {
+      console.warn('[DB] pgvector extension not available:', e.message);
+    }
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS kb_docs (
         id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL,
         filename TEXT NOT NULL,
+        content TEXT,
+        file_size BIGINT,
+        mime_type VARCHAR(100),
+        status VARCHAR(20) DEFAULT 'processing',
+        error_message TEXT,
+        total_chars INTEGER DEFAULT 0,
+        chunk_count INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS kb_files (
+        id SERIAL PRIMARY KEY,
+        doc_id INTEGER REFERENCES kb_docs(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL,
+        file_path TEXT NOT NULL,
+        file_size BIGINT,
+        mime_type VARCHAR(100),
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    const embeddingCol = pgvectorEnabled ? 'embedding VECTOR(1536)' : 'embedding JSONB';
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS kb_chunks (
+        id SERIAL PRIMARY KEY,
+        doc_id INTEGER NOT NULL REFERENCES kb_docs(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL,
         content TEXT NOT NULL,
+        ${embeddingCol},
+        meta JSONB,
+        keywords TSVECTOR,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_kb_chunks_doc_id ON kb_chunks(doc_id)`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_kb_chunks_keywords ON kb_chunks USING GIN(keywords)`);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS kb_sheets (
+        id SERIAL PRIMARY KEY,
+        doc_id INTEGER REFERENCES kb_docs(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL,
+        sheet_name TEXT,
+        sheet_index INTEGER,
+        headers JSONB,
+        rows_json JSONB,
+        markdown TEXT,
+        row_count INTEGER,
+        col_count INTEGER
       )
     `);
 
@@ -380,6 +441,157 @@ async function deleteKbDoc(id, userId) {
   await pool.query('DELETE FROM kb_docs WHERE id = $1 AND user_id = $2', [id, userId]);
 }
 
+// ==================== KB V2: 专业级知识库 ====================
+
+async function createKbDocV2(userId, filename, mimeType, fileSize, content, status = 'processing') {
+  const result = await pool.query(
+    `INSERT INTO kb_docs (user_id, filename, mime_type, file_size, content, status, total_chars)
+     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+    [userId, filename, mimeType, fileSize, content || '', status, content ? content.length : 0]
+  );
+  return result.rows[0];
+}
+
+async function getKbDocsByUserV2(userId) {
+  const result = await pool.query(
+    `SELECT id, user_id, filename, mime_type, file_size, status, error_message,
+            total_chars, chunk_count, created_at, updated_at
+     FROM kb_docs WHERE user_id = $1 ORDER BY created_at DESC`,
+    [userId]
+  );
+  return result.rows;
+}
+
+async function getKbDocById(id, userId) {
+  const result = await pool.query(
+    `SELECT * FROM kb_docs WHERE id = $1 AND user_id = $2`,
+    [id, userId]
+  );
+  return result.rows[0] || null;
+}
+
+async function updateKbDocStatus(id, userId, status, updates = {}) {
+  const fields = ['status = $3'];
+  const values = [id, userId, status];
+  let idx = 4;
+  if (updates.errorMessage !== undefined) {
+    fields.push(`error_message = $${idx++}`);
+    values.push(updates.errorMessage);
+  }
+  if (updates.chunkCount !== undefined) {
+    fields.push(`chunk_count = $${idx++}`);
+    values.push(updates.chunkCount);
+  }
+  if (updates.totalChars !== undefined) {
+    fields.push(`total_chars = $${idx++}`);
+    values.push(updates.totalChars);
+  }
+  if (updates.content !== undefined) {
+    fields.push(`content = $${idx++}`);
+    values.push(updates.content);
+  }
+  values.push(new Date());
+  fields.push(`updated_at = $${idx++}`);
+  await pool.query(
+    `UPDATE kb_docs SET ${fields.join(', ')} WHERE id = $1 AND user_id = $2`,
+    values
+  );
+}
+
+async function deleteKbDocV2(id, userId) {
+  await pool.query('DELETE FROM kb_docs WHERE id = $1 AND user_id = $2', [id, userId]);
+}
+
+async function createKbFile(docId, userId, filePath, fileSize, mimeType) {
+  const result = await pool.query(
+    `INSERT INTO kb_files (doc_id, user_id, file_path, file_size, mime_type)
+     VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+    [docId, userId, filePath, fileSize, mimeType]
+  );
+  return result.rows[0].id;
+}
+
+async function createKbChunks(chunks) {
+  if (!chunks || chunks.length === 0) return;
+  const values = [];
+  const params = [];
+  let idx = 1;
+  for (const c of chunks) {
+    params.push(`($${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, to_tsvector('simple', $${idx++}))`);
+    // pgvector 接收数组；JSONB 列接收字符串化数组
+    const embeddingVal = pgvectorEnabled
+      ? (c.embedding || null)
+      : (c.embedding ? JSON.stringify(c.embedding) : null);
+    values.push(c.docId, c.userId, c.content, embeddingVal, JSON.stringify(c.meta || {}), c.content);
+  }
+  await pool.query(
+    `INSERT INTO kb_chunks (doc_id, user_id, content, embedding, meta, keywords) VALUES ${params.join(',')}`,
+    values
+  );
+}
+
+async function createKbSheets(sheets) {
+  if (!sheets || sheets.length === 0) return;
+  const values = [];
+  const params = [];
+  let idx = 1;
+  for (const s of sheets) {
+    params.push(`($${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++})`);
+    values.push(s.docId, s.userId, s.sheetName, s.sheetIndex, JSON.stringify(s.headers), JSON.stringify(s.rows), s.markdown, s.rowCount, s.colCount);
+  }
+  await pool.query(
+    `INSERT INTO kb_sheets (doc_id, user_id, sheet_name, sheet_index, headers, rows_json, markdown, row_count, col_count)
+     VALUES ${params.join(',')}`,
+    values
+  );
+}
+
+async function searchKbChunksByKeywords(userId, keywords, limit = 5) {
+  if (!keywords || keywords.length === 0) return [];
+  const query = keywords.join(' & ');
+  const result = await pool.query(
+    `SELECT kc.id, kc.doc_id, kc.content, kc.meta,
+            ts_rank_cd(kc.keywords, query) AS score
+     FROM kb_chunks kc, to_tsquery('simple', $2) query
+     WHERE kc.user_id = $1 AND kc.keywords @@ query
+     ORDER BY score DESC
+     LIMIT $3`,
+    [userId, query, limit]
+  );
+  return result.rows;
+}
+
+function isPgvectorEnabled() {
+  return pgvectorEnabled;
+}
+
+async function searchKbChunksByVector(userId, embedding, limit = 5) {
+  if (!pgvectorEnabled) {
+    throw new Error('pgvector 扩展未启用，无法执行向量检索');
+  }
+  const result = await pool.query(
+    `SELECT id, doc_id, content, meta,
+            embedding <=> $2::vector AS distance
+     FROM kb_chunks
+     WHERE user_id = $1 AND embedding IS NOT NULL
+     ORDER BY embedding <=> $2::vector
+     LIMIT $3`,
+    [userId, JSON.stringify(embedding), limit]
+  );
+  return result.rows.map(r => ({ ...r, score: 1 - r.distance }));
+}
+
+async function getKbChunksByDoc(docId, userId, limit = 20) {
+  const result = await pool.query(
+    `SELECT id, content, meta, created_at FROM kb_chunks
+     WHERE doc_id = $1 AND user_id = $2
+     ORDER BY (meta->>'chunk_index')::int
+     LIMIT $3`,
+    [docId, userId, limit]
+  );
+  return result.rows;
+}
+
 // ==================== P0: 招标公告 ====================
 async function createAnnouncement(data) {
   const result = await pool.query(
@@ -705,6 +917,19 @@ module.exports = {
   getKbDocsByUser,
   createKbDoc,
   deleteKbDoc,
+  // KB V2
+  createKbDocV2,
+  getKbDocsByUserV2,
+  getKbDocById,
+  updateKbDocStatus,
+  deleteKbDocV2,
+  createKbFile,
+  createKbChunks,
+  createKbSheets,
+  searchKbChunksByKeywords,
+  searchKbChunksByVector,
+  getKbChunksByDoc,
+  isPgvectorEnabled,
   // P0
   createAnnouncement,
   getAnnouncements,

@@ -1289,8 +1289,14 @@
         .kb-section { padding: 0 15px 10px; border-bottom: 1px solid var(--border-color); }
         .kb-title { font-family: var(--font-tech); font-size: 10px; color: var(--text-sub); margin-bottom: 8px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
         .kb-list { max-height: 120px; overflow-y: auto; margin-bottom: 8px; }
-        .kb-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 8px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 4px; font-size: 11px; color: var(--text-sub); }
-        .kb-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .kb-item { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 6px 8px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 4px; font-size: 11px; color: var(--text-sub); }
+        .kb-item-main { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 2px; }
+        .kb-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-main); }
+        .kb-item-status { font-size: 10px; font-family: var(--font-mono); }
+        .kb-status-ready { color: var(--success, #2E7D32); }
+        .kb-status-processing { color: var(--warning, #C89B3C); }
+        .kb-status-error { color: var(--danger, #D32F2F); }
+        .kb-item-error { width: 100%; font-size: 10px; color: var(--danger); margin-top: 4px; }
         .kb-item-del { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 12px; padding: 0 4px; }
         .kb-toggle { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 11px; color: var(--text-sub); cursor: pointer; }
         .kb-toggle input { accent-color: var(--accent-color); }
@@ -2561,7 +2567,7 @@
                 <div class="kb-list" id="kbList"></div>
                 <button class="config-btn" onclick="document.getElementById('kbInput').click()">+ 添加文档</button>
                 <button class="bond-codin-nav-btn" onclick="enterBondCodinMode()" title="进入代码审计与架构分析模式"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Bond Codin · 编程大师</button>
-                <input type="file" id="kbInput" style="display:none" accept=".txt,.md,.csv,.json,.docx,.pdf,.png,.jpg,.jpeg,.gif,.webp,.bmp" onchange="handleKbUpload(event)">
+                <input type="file" id="kbInput" style="display:none" accept=".txt,.md,.csv,.json,.docx,.doc,.pdf,.png,.jpg,.jpeg,.gif,.webp,.bmp,.tiff,.xlsx,.xls,.pptx" onchange="handleKbUpload(event)">
                 <label class="kb-toggle"><input type="checkbox" id="kbToggle" onchange="toggleKb()"> 启用知识库检索</label>
             </div>
         </div>
@@ -4995,18 +5001,37 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
         async function loadKbFromServer() {
             try {
                 const docs = await api('/api/kb');
-                return docs.map(d => ({ id: d.id, name: d.filename, content: d.content }));
+                return docs.map(d => ({
+                    id: d.id,
+                    name: d.filename,
+                    filename: d.filename,
+                    status: d.status || 'ready',
+                    error_message: d.error_message,
+                    chunk_count: d.chunk_count,
+                    mime_type: d.mime_type,
+                    file_size: d.file_size
+                }));
             } catch { return []; }
         }
         function renderKbList(files) {
             const box = document.getElementById('kbList');
             if (!box) return;
-            box.innerHTML = (files || []).map((f, i) => `
+            box.innerHTML = (files || []).map(f => {
+                const statusMap = { processing: '处理中', ready: '已完成', error: '失败' };
+                const statusClass = f.status === 'ready' ? 'kb-status-ready' : (f.status === 'error' ? 'kb-status-error' : 'kb-status-processing');
+                const meta = f.status === 'ready' ? ` · ${f.chunk_count || 0} 片段` : '';
+                const err = f.status === 'error' ? `<div class="kb-item-error">${escapeHtml(f.error_message || '处理失败')}</div>` : '';
+                return `
                 <div class="kb-item">
-                    <span class="kb-item-name">${escapeHtml(f.name)}</span>
-                    <button class="kb-item-del" onclick="deleteKbFile(${f.id || i})">×</button>
+                    <div class="kb-item-main">
+                        <span class="kb-item-name">${escapeHtml(f.name || f.filename)}</span>
+                        <span class="kb-item-status ${statusClass}">${statusMap[f.status] || f.status}${meta}</span>
+                    </div>
+                    <button class="kb-item-del" onclick="deleteKbFile(${f.id})">×</button>
+                    ${err}
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
         async function refreshKbList() {
             const files = await loadKbFromServer();
@@ -5015,38 +5040,39 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
         async function handleKbUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
+            const allowed = ['txt','md','csv','json','docx','doc','pdf','png','jpg','jpeg','gif','webp','bmp','tiff','tif','xlsx','xls','pptx'];
             const ext = file.name.split('.').pop().toLowerCase();
-            const textExts = ['txt', 'md', 'csv', 'json'];
-            const docExts = ['docx'];
-            const pdfExts = ['pdf'];
-            const imgExts = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'];
-            if (![...textExts, ...docExts, ...pdfExts, ...imgExts].includes(ext)) {
-                alert('暂不支持该格式，支持: txt, md, csv, json, docx, pdf, png, jpg, gif, webp, bmp');
+            if (!allowed.includes(ext)) {
+                alert('暂不支持该格式，支持: txt, md, csv, json, docx, doc, pdf, png, jpg, gif, webp, bmp, tiff, xlsx, xls, pptx');
                 return;
             }
-            let content = '';
+            const formData = new FormData();
+            formData.append('file', file);
             try {
-                if (textExts.includes(ext)) {
-                    content = await readFileAsText(file);
-                } else if (docExts.includes(ext)) {
-                    content = await parseDocx(file);
-                } else if (pdfExts.includes(ext)) {
-                    content = await parsePdf(file);
-                } else if (imgExts.includes(ext)) {
-                    content = await parseImageOcr(file);
+                const token = localStorage.getItem('token');
+                const res = await fetch('/api/kb/upload', {
+                    method: 'POST',
+                    headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+                    body: formData
+                });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.error || '上传失败');
                 }
-            } catch (err) {
-                alert('文件解析失败: ' + err.message);
-                return;
-            }
-            if (!content || !content.trim()) {
-                alert('未能从文件中提取到文本内容');
-                return;
-            }
-            try {
-                await api('/api/kb', { method: 'POST', body: JSON.stringify({ filename: file.name, content }) });
                 await refreshKbList();
+                // 轮询状态直到处理完成
+                pollKbStatus();
             } catch (err) { alert('上传失败: ' + err.message); }
+        }
+        async function pollKbStatus() {
+            for (let i = 0; i < 30; i++) {
+                await new Promise(r => setTimeout(r, 1500));
+                await refreshKbList();
+                const box = document.getElementById('kbList');
+                if (!box) return;
+                const processing = box.querySelector('.kb-status-processing');
+                if (!processing) return;
+            }
         }
         function readFileAsText(file) {
             return new Promise((resolve, reject) => {

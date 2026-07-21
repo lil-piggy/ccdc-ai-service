@@ -4,7 +4,11 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const multer = require('multer');
 const db = require('./db');
+const { ingestKbDocument } = require('./services/kbIngestion');
+const { isEnabled: embeddingEnabled, getEmbedding } = require('./services/embedding');
+const { extractKeywords } = require('./services/retrieval');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -87,9 +91,15 @@ const BOND_CODIN_PROMPT = `你是 Bond Codin（中债系统编程大师），一
 - 通用编程问题：结合中债业务场景给出最佳实践建议`;
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// KB 上传配置
+const kbUpload = multer({
+  dest: path.join(__dirname, 'uploads', 'kb_tmp'),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+});
 
 // JWT middleware
 function authMiddleware(req, res, next) {
@@ -217,23 +227,50 @@ app.post('/api/config', authMiddleware, async (req, res) => {
   res.json({ ok: true });
 });
 
-// KB upload
+// KB upload V2：后端统一解析原始文件
+app.post('/api/kb/upload', authMiddleware, kbUpload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: '未选择文件' });
+    const result = await ingestKbDocument(req.file, req.userId, {
+      chunkSize: parseInt(req.body.chunkSize || process.env.KB_CHUNK_SIZE || '500', 10),
+      overlap: parseInt(req.body.overlap || process.env.KB_CHUNK_OVERLAP || '100', 10),
+    });
+    if (result.success) {
+      res.json({ id: result.docId, chunkCount: result.chunkCount, status: 'ready' });
+    } else {
+      res.status(500).json({ error: result.error, id: result.docId });
+    }
+  } catch (err) {
+    console.error('[KB Upload]', err);
+    res.status(500).json({ error: err.message || '上传处理失败' });
+  }
+});
+
+// 兼容旧版：前端传已提取文本
 app.post('/api/kb', authMiddleware, async (req, res) => {
   const { filename, content } = req.body;
   if (!filename || !content) return res.status(400).json({ error: '缺少文件名或内容' });
-  const result = await db.createKbDoc(req.userId, filename, content);
-  res.json({ id: result.lastInsertRowid });
+  const doc = await db.createKbDocV2(req.userId, filename, 'text/plain', content.length, content, 'ready');
+  res.json({ id: doc.id });
 });
 
 // KB list
 app.get('/api/kb', authMiddleware, async (req, res) => {
-  const docs = await db.getKbDocsByUser(req.userId);
+  const docs = await db.getKbDocsByUserV2(req.userId);
   res.json(docs);
+});
+
+// KB 文档详情
+app.get('/api/kb/:id', authMiddleware, async (req, res) => {
+  const doc = await db.getKbDocById(req.params.id, req.userId);
+  if (!doc) return res.status(404).json({ error: '文档不存在' });
+  const chunks = await db.getKbChunksByDoc(req.params.id, req.userId, 50);
+  res.json({ doc, chunks });
 });
 
 // KB delete
 app.delete('/api/kb/:id', authMiddleware, async (req, res) => {
-  await db.deleteKbDoc(req.params.id, req.userId);
+  await db.deleteKbDocV2(req.params.id, req.userId);
   res.json({ ok: true });
 });
 
@@ -264,40 +301,20 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
     return res.status(503).json({ error: '管理员未配置 API' });
   }
 
-  // Knowledge base retrieval
+  // Knowledge base retrieval (Hybrid Search)
   let kbContext = '';
   try {
-    const kbDocs = await db.getKbDocsByUser(req.userId);
-    if (kbDocs && kbDocs.length > 0 && userMessage) {
-      // 提取关键词：英文按单词(2字母+)，中文按单个汉字
-      function extractKeywords(text) {
-        const words = [];
-        // 英文单词
-        const enWords = text.match(/[a-zA-Z]{2,}/g) || [];
-        words.push(...enWords.map(w => w.toLowerCase()));
-        // 中文字符（逐字匹配，过滤常见虚词）
-        const stopChars = new Set('的了是在和与或及等为有这那它个上下中来去到从向把被让给对由于因为所以因此如果即使虽然但是然而而且并且或者还是要么不仅不但与其不如无论不管只要只有除非除了除去有关相关涉及包括包含还有另外此外其余其他从而进而于是然后接着随后最后最终总之总而言之综上所述由此看来由此可见也就是说换言之换句话说即也就是即指所谓的所谓例如比如譬如诸如像好像如同类似相似相同相反不同区别差异变化改变');
-        const cnChars = text.match(/[\u4e00-\u9fa5]/g) || [];
-        words.push(...cnChars.filter(c => !stopChars.has(c)));
-        return words;
+    if (userMessage) {
+      const topK = parseInt(process.env.KB_TOP_K || '5', 10);
+      let results = [];
+      if (embeddingEnabled()) {
+        results = await hybridSearch(req.userId, userMessage, topK);
+      } else {
+        results = await keywordFallbackSearch(req.userId, userMessage, topK);
       }
-      const qWords = extractKeywords(userMessage);
-      console.log('[KB] Keywords extracted:', qWords.slice(0, 20));
-      const segments = [];
-      kbDocs.forEach(doc => {
-        // 按段落/句子拆分，保留更短的片段(>5字)
-        const chunks = doc.content.split(/[\n。！？;；]/).filter(s => s.trim().length > 5);
-        chunks.forEach(chunk => {
-          let score = 0;
-          qWords.forEach(w => { if (chunk.includes(w)) score += 1; });
-          if (score > 0) segments.push({ text: chunk.trim(), score, source: doc.filename });
-        });
-      });
-      segments.sort((a, b) => b.score - a.score);
-      const top = segments.slice(0, 3);
-      console.log('[KB] Matched segments:', top.length, top.map(s => ({ source: s.source, score: s.score })));
-      if (top.length) {
-        kbContext = '\n\n【知识库参考】\n' + top.map((s, i) => `[${i+1}] ${s.text} (来源: ${s.source})`).join('\n') + '\n';
+      console.log('[KB] Matched chunks:', results.length, results.map(s => ({ source: s.meta?.source || s.meta?.filename, score: s.finalScore?.toFixed(3) })));
+      if (results.length > 0) {
+        kbContext = formatKbContext(results);
       }
     }
   } catch (e) {
