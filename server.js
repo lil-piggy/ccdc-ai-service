@@ -8,7 +8,7 @@ const multer = require('multer');
 const db = require('./db');
 const { ingestKbDocument } = require('./services/kbIngestion');
 const { isEnabled: embeddingEnabled, getEmbedding } = require('./services/embedding');
-const { extractKeywords } = require('./services/retrieval');
+const { extractKeywords, hybridSearch, keywordFallbackSearch, formatKbContext } = require('./services/retrieval');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
