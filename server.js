@@ -383,7 +383,12 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
 });
 
 async function start() {
-  await db.initDb();
+  try {
+    await db.initDb();
+  } catch (err) {
+    console.error('[FATAL] Database initialization failed:', err.message);
+    console.error('[FATAL] Service will start in degraded mode. KB and persistent features may not work.');
+  }
   app.listen(PORT, () => {
     console.log('========================================');
     console.log(`CCDC AI Service running on port ${PORT}`);
