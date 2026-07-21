@@ -95,10 +95,10 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// KB 上传配置
+// KB 上传配置（Render 免费版内存有限，限制 10MB）
 const kbUpload = multer({
   dest: path.join(__dirname, 'uploads', 'kb_tmp'),
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 });
 
 // JWT middleware

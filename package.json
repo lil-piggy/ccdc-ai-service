@@ -4,7 +4,7 @@
   "description": "CCDC 智能金融助手 - 多用户在线服务",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node --max-old-space-size=384 server.js",
     "dev": "node --watch server.js"
   },
   "engines": {

@@ -28,32 +28,33 @@ function makeSafeFilename(original) {
  * @param {Object} options
  */
 async function ingestKbDocument(file, userId, options = {}) {
-  const originalName = file.originalname || file.filename;
-  const safeName = `${Date.now()}_${makeSafeFilename(originalName)}`;
-  const destPath = path.join(UPLOAD_DIR, safeName);
-
-  // multer 已把文件放到临时路径，移动到目标目录
-  if (file.path && file.path !== destPath) {
-    fs.renameSync(file.path, destPath);
-  }
-
-  const fileSize = file.size || fs.statSync(destPath).size;
-  const mimeType = file.mimetype || 'application/octet-stream';
   const docId = options.docId;
-
-  // 1. 创建文档记录（如果未提供 docId）
-  let doc;
-  if (docId) {
-    doc = await db.getKbDocById(docId, userId);
-    if (!doc) throw new Error('文档记录不存在');
-  } else {
-    doc = await db.createKbDocV2(userId, originalName, mimeType, fileSize, '', 'processing');
-  }
-
-  // 2. 记录原始文件
-  await db.createKbFile(doc.id, userId, destPath, fileSize, mimeType);
+  let doc = null;
 
   try {
+    const originalName = file.originalname || file.filename;
+    const safeName = `${Date.now()}_${makeSafeFilename(originalName)}`;
+    const destPath = path.join(UPLOAD_DIR, safeName);
+
+    // multer 已把文件放到临时路径，移动到目标目录
+    if (file.path && file.path !== destPath) {
+      fs.renameSync(file.path, destPath);
+    }
+
+    const fileSize = file.size || fs.statSync(destPath).size;
+    const mimeType = file.mimetype || 'application/octet-stream';
+
+    // 1. 获取或创建文档记录
+    if (docId) {
+      doc = await db.getKbDocById(docId, userId);
+      if (!doc) throw new Error('文档记录不存在');
+    } else {
+      doc = await db.createKbDocV2(userId, originalName, mimeType, fileSize, '', 'processing');
+    }
+
+    // 2. 记录原始文件
+    await db.createKbFile(doc.id, userId, destPath, fileSize, mimeType);
+
     // 3. 解析文档
     const parsed = await extractKbDocument(destPath, mimeType);
 
@@ -113,11 +114,15 @@ async function ingestKbDocument(file, userId, options = {}) {
 
     return { success: true, docId: doc.id, chunkCount: finalChunks.length };
   } catch (err) {
-    console.error('[KB Ingestion] Error:', err.message);
-    await db.updateKbDocStatus(doc.id, userId, 'error', {
-      errorMessage: err.message,
-    });
-    return { success: false, docId: doc.id, error: err.message };
+    console.error('[KB Ingestion] Error:', err.message, err.stack);
+    if (doc && doc.id) {
+      try {
+        await db.updateKbDocStatus(doc.id, userId, 'error', { errorMessage: err.message });
+      } catch (dbErr) {
+        console.error('[KB Ingestion] Failed to update error status:', dbErr.message);
+      }
+    }
+    return { success: false, docId: doc ? doc.id : null, error: err.message };
   }
 }
 

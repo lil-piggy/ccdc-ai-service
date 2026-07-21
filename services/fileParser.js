@@ -9,6 +9,8 @@ const XLSX = require('xlsx');
 const IMAGE_MIME_REGEX = /^image\/(png|jpe?g|gif|webp|bmp|tiff?)$/;
 const MAX_SHEET_ROWS = 1000;
 const MAX_SHEET_PREVIEW_ROWS = 50;
+const MAX_PDF_OCR_PAGES = 20;
+const MAX_FILE_SIZE_MB = 10;
 
 /**
  * 用 Tesseract.js 识别图片 Buffer 中的文字
@@ -119,6 +121,11 @@ async function extractText(filePath, mimeType) {
  */
 async function extractKbDocument(filePath, mimeType) {
   const ext = path.extname(filePath).toLowerCase();
+  const stat = fs.statSync(filePath);
+  const fileSizeMB = stat.size / (1024 * 1024);
+  if (fileSizeMB > MAX_FILE_SIZE_MB) {
+    throw new Error(`文件过大：${fileSizeMB.toFixed(1)}MB，当前限制 ${MAX_FILE_SIZE_MB}MB。请压缩或拆分后上传。`);
+  }
   const buffer = fs.readFileSync(filePath);
 
   // DOCX
@@ -143,10 +150,14 @@ async function extractKbDocument(filePath, mimeType) {
     if (!text || text.trim().length < 50) {
       console.log('[PDF] 文本内容为空或过少，尝试 OCR 识别扫描件...');
       try {
-        const document = await pdf(filePath, { scale: 2.0 });
+        const document = await pdf(filePath, { scale: 1.0 });
         let pageIndex = 0;
         for await (const image of document) {
           pageIndex++;
+          if (pageIndex > MAX_PDF_OCR_PAGES) {
+            console.log(`[PDF OCR] 超过最大页数 ${MAX_PDF_OCR_PAGES}，停止识别`);
+            break;
+          }
           console.log(`[OCR] 识别 PDF 第 ${pageIndex} 页...`);
           const pageText = await ocrImageBuffer(image);
           images.push({ page: pageIndex, text: pageText });
