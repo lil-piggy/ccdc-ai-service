@@ -118,9 +118,21 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// Health check
+// Health check（必须能在 DB 初始化失败时依然响应）
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', time: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    time: new Date().toISOString(),
+    database: process.env.DATABASE_URL ? 'configured' : 'missing',
+    jwt: process.env.JWT_SECRET ? 'configured' : 'missing',
+    adminApi: process.env.ADMIN_API_URL ? 'configured' : 'missing',
+    embeddingApi: process.env.EMBEDDING_API_URL ? 'configured' : 'missing'
+  });
+});
+
+// 根路径健康检查（避免 Render 对 / 的请求导致 404/502）
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Register
@@ -383,13 +395,25 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
 });
 
 async function start() {
+  console.log('========================================');
+  console.log('[BOOT] CCDC AI Service starting...');
+  console.log('[BOOT] Node version:', process.version);
+  console.log('[BOOT] PORT:', PORT);
+  console.log('[BOOT] DATABASE_URL:', process.env.DATABASE_URL ? 'SET (length=' + process.env.DATABASE_URL.length + ')' : 'MISSING');
+  console.log('[BOOT] JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'MISSING - USING INSECURE DEFAULT');
+  console.log('[BOOT] ADMIN_API_URL:', process.env.ADMIN_API_URL ? 'SET' : 'MISSING');
+  console.log('[BOOT] ADMIN_API_KEY:', process.env.ADMIN_API_KEY ? 'SET' : 'MISSING');
+  console.log('[BOOT] EMBEDDING_API_URL:', process.env.EMBEDDING_API_URL ? 'SET' : 'MISSING');
+  console.log('========================================');
   try {
     await db.initDb();
+    console.log('[BOOT] Database initialized successfully');
   } catch (err) {
     console.error('[FATAL] Database initialization failed:', err.message);
+    console.error('[FATAL] Stack:', err.stack);
     console.error('[FATAL] Service will start in degraded mode. KB and persistent features may not work.');
   }
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log('========================================');
     console.log(`CCDC AI Service running on port ${PORT}`);
     console.log(`Admin API Models: ${ADMIN_MODELS.map(m => m.label).join(', ')}`);
@@ -398,4 +422,7 @@ async function start() {
     console.log('========================================');
   });
 }
-start();
+start().catch(err => {
+  console.error('[FATAL] Startup failed:', err);
+  process.exit(1);
+});
