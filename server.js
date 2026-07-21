@@ -239,19 +239,32 @@ app.post('/api/config', authMiddleware, async (req, res) => {
   res.json({ ok: true });
 });
 
-// KB upload V2：后端统一解析原始文件
+// KB upload V2：后端统一解析原始文件（异步处理，立即返回，防止 Render 超时）
 app.post('/api/kb/upload', authMiddleware, kbUpload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: '未选择文件' });
-    const result = await ingestKbDocument(req.file, req.userId, {
+    // 修复 multer 对 UTF-8 文件名的 latin1 解码问题
+    if (req.file.originalname) {
+      req.file.originalname = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
+    }
+    const doc = await db.createKbDocV2(
+      req.userId,
+      req.file.originalname || req.file.filename,
+      req.file.mimetype || 'application/octet-stream',
+      req.file.size || 0,
+      '',
+      'processing'
+    );
+    // 后台异步处理，不阻塞响应
+    ingestKbDocument(req.file, req.userId, {
+      docId: doc.id,
       chunkSize: parseInt(req.body.chunkSize || process.env.KB_CHUNK_SIZE || '500', 10),
       overlap: parseInt(req.body.overlap || process.env.KB_CHUNK_OVERLAP || '100', 10),
+    }).catch(err => {
+      console.error('[KB Upload Background Error]', err.message);
+      db.updateKbDocStatus(doc.id, req.userId, 'error', { errorMessage: err.message }).catch(() => {});
     });
-    if (result.success) {
-      res.json({ id: result.docId, chunkCount: result.chunkCount, status: 'ready' });
-    } else {
-      res.status(500).json({ error: result.error, id: result.docId });
-    }
+    res.status(202).json({ id: doc.id, status: 'processing' });
   } catch (err) {
     console.error('[KB Upload]', err);
     res.status(500).json({ error: err.message || '上传处理失败' });
