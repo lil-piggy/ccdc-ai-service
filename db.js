@@ -1,6 +1,7 @@
 const { Pool } = require('pg');
 
 let pgvectorEnabled = false;
+const EMBEDDING_DIMENSION = parseInt(process.env.EMBEDDING_DIMENSION || '1536', 10);
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -94,7 +95,7 @@ async function initDb() {
       )
     `);
 
-    const embeddingCol = pgvectorEnabled ? 'embedding VECTOR(1536)' : 'embedding JSONB';
+    const embeddingCol = pgvectorEnabled ? `embedding VECTOR(${EMBEDDING_DIMENSION})` : 'embedding JSONB';
     await client.query(`
       CREATE TABLE IF NOT EXISTS kb_chunks (
         id SERIAL PRIMARY KEY,

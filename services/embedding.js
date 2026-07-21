@@ -7,7 +7,11 @@
 require('dotenv').config();
 const OpenAI = require('openai');
 
-const EMBEDDING_API_URL = process.env.EMBEDDING_API_URL || process.env.ADMIN_API_URL || '';
+function normalizeBaseUrl(url) {
+  if (!url) return '';
+  return url.replace(/\/chat\/completions\/?$/, '').replace(/\/$/, '');
+}
+const EMBEDDING_API_URL = normalizeBaseUrl(process.env.EMBEDDING_API_URL || process.env.ADMIN_API_URL || '');
 const EMBEDDING_API_KEY = process.env.EMBEDDING_API_KEY || process.env.ADMIN_API_KEY || '';
 const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'text-embedding-3-small';
 const EMBEDDING_DIMENSION = parseInt(process.env.EMBEDDING_DIMENSION || '1536', 10);
