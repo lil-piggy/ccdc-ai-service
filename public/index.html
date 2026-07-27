@@ -3145,6 +3145,617 @@
             background: var(--rd-text-muted);
         }
 
+    
+        /* ==================== 风险监测与沙盘推演大屏 ==================== */
+        .risk-dashboard-panel {
+            --rd-primary: #0A2540;
+            --rd-primary-hover: #143A5E;
+            --rd-accent: #C89B3C;
+            --rd-bg: #0B1426;
+            --rd-surface: #111D33;
+            --rd-surface-elevated: #1A2B47;
+            --rd-border: #1E3A5F;
+            --rd-text-primary: #E8F0FE;
+            --rd-text-secondary: #9DB2CE;
+            --rd-text-muted: #5A7396;
+            --rd-success: #10B981;
+            --rd-warning: #F59E0B;
+            --rd-danger: #EF4444;
+            --rd-orange: #F97316;
+            --rd-info: #3B82F6;
+
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1001;
+            flex-direction: column;
+            background: var(--rd-bg);
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--rd-text-primary);
+        }
+        .risk-dashboard-panel.active {
+            display: flex;
+            animation: rdFadeIn 0.3s ease;
+        }
+        @keyframes rdFadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .rd-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            height: 60px;
+            background: var(--rd-primary);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .rd-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #FFFFFF;
+        }
+        .rd-brand svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--rd-accent);
+        }
+        .rd-brand span {
+            font-size: 12px;
+            font-weight: 400;
+            color: rgba(255,255,255,0.6);
+            margin-left: 4px;
+        }
+        .rd-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .rd-live-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(16,185,129,0.15);
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--rd-success);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .rd-live-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--rd-success);
+            border-radius: 50%;
+            animation: rdPulse 2s infinite;
+        }
+        @keyframes rdPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+        .rd-close-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            color: #FFFFFF;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .rd-close-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .rd-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 1px;
+            background: var(--rd-border);
+        }
+        .rd-col {
+            display: flex;
+            flex-direction: column;
+            background: var(--rd-bg);
+            overflow: hidden;
+        }
+        .rd-col-left { width: 320px; flex-shrink: 0; }
+        .rd-col-center { flex: 1; min-width: 0; }
+        .rd-col-right { width: 360px; flex-shrink: 0; }
+        .rd-card {
+            background: var(--rd-surface);
+            border: 1px solid var(--rd-border);
+            border-radius: 8px;
+            margin: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .rd-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--rd-border);
+            background: var(--rd-surface-elevated);
+        }
+        .rd-card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--rd-text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .rd-card-title svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--rd-accent);
+        }
+        .rd-card-body {
+            padding: 16px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .rd-chart-container {
+            width: 100%;
+            height: 100%;
+            min-height: 200px;
+        }
+        /* 风险指标仪表盘 */
+        .rd-indicator-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 12px;
+        }
+        .rd-indicator-card {
+            background: var(--rd-surface);
+            border: 1px solid var(--rd-border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .rd-indicator-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--rd-success);
+        }
+        .rd-indicator-card.level-red::before { background: var(--rd-danger); }
+        .rd-indicator-card.level-orange::before { background: var(--rd-orange); }
+        .rd-indicator-card.level-yellow::before { background: var(--rd-warning); }
+        .rd-indicator-card.level-green::before { background: var(--rd-success); }
+        .rd-indicator-name {
+            font-size: 12px;
+            color: var(--rd-text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .rd-indicator-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--rd-text-primary);
+            margin-bottom: 4px;
+        }
+        .rd-indicator-value.level-red { color: var(--rd-danger); }
+        .rd-indicator-value.level-orange { color: var(--rd-orange); }
+        .rd-indicator-value.level-yellow { color: var(--rd-warning); }
+        .rd-indicator-value.level-green { color: var(--rd-success); }
+        .rd-indicator-unit {
+            font-size: 14px;
+            color: var(--rd-text-muted);
+            margin-left: 2px;
+        }
+        .rd-indicator-desc {
+            font-size: 11px;
+            color: var(--rd-text-muted);
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+        .rd-indicator-level {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-top: 6px;
+            text-transform: uppercase;
+        }
+        .rd-indicator-level.level-red { background: rgba(239,68,68,0.2); color: var(--rd-danger); }
+        .rd-indicator-level.level-orange { background: rgba(249,115,22,0.2); color: var(--rd-orange); }
+        .rd-indicator-level.level-yellow { background: rgba(245,158,11,0.2); color: var(--rd-warning); }
+        .rd-indicator-level.level-green { background: rgba(16,185,129,0.2); color: var(--rd-success); }
+        /* 预警列表 */
+        .rd-alert-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .rd-alert-item {
+            background: var(--rd-surface);
+            border: 1px solid var(--rd-border);
+            border-left: 3px solid var(--rd-success);
+            border-radius: 6px;
+            padding: 12px;
+            transition: all 0.2s;
+        }
+        .rd-alert-item:hover {
+            background: var(--rd-surface-elevated);
+        }
+        .rd-alert-item.level-red { border-left-color: var(--rd-danger); }
+        .rd-alert-item.level-orange { border-left-color: var(--rd-orange); }
+        .rd-alert-item.level-yellow { border-left-color: var(--rd-warning); }
+        .rd-alert-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .rd-alert-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--rd-text-primary);
+        }
+        .rd-alert-level {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .rd-alert-level.level-red { background: rgba(239,68,68,0.2); color: var(--rd-danger); }
+        .rd-alert-level.level-orange { background: rgba(249,115,22,0.2); color: var(--rd-orange); }
+        .rd-alert-level.level-yellow { background: rgba(245,158,11,0.2); color: var(--rd-warning); }
+        .rd-alert-message {
+            font-size: 12px;
+            color: var(--rd-text-secondary);
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        .rd-alert-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--rd-text-muted);
+        }
+        .rd-alert-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .rd-alert-btn {
+            padding: 2px 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--rd-border);
+            border-radius: 4px;
+            color: var(--rd-text-secondary);
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .rd-alert-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--rd-text-primary);
+        }
+        /* 沙盘推演控制区 */
+        .rd-sandbox-controls {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            padding: 16px;
+            background: var(--rd-surface-elevated);
+            border-bottom: 1px solid var(--rd-border);
+        }
+        .rd-scenario-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .rd-scenario-label {
+            font-size: 12px;
+            color: var(--rd-text-secondary);
+            font-weight: 500;
+        }
+        .rd-scenario-select {
+            padding: 8px 12px;
+            background: var(--rd-surface);
+            border: 1px solid var(--rd-border);
+            border-radius: 6px;
+            color: var(--rd-text-primary);
+            font-size: 13px;
+            min-width: 200px;
+            cursor: pointer;
+        }
+        .rd-scenario-select:focus {
+            outline: none;
+            border-color: var(--rd-accent);
+        }
+        .rd-param-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .rd-param-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .rd-param-label {
+            font-size: 12px;
+            color: var(--rd-text-secondary);
+            min-width: 80px;
+        }
+        .rd-param-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: var(--rd-border);
+            border-radius: 2px;
+            outline: none;
+        }
+        .rd-param-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--rd-accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .rd-param-value {
+            font-size: 13px;
+            color: var(--rd-text-primary);
+            font-weight: 600;
+            min-width: 50px;
+            text-align: right;
+        }
+        .rd-run-btn {
+            padding: 10px 24px;
+            background: var(--rd-accent);
+            border: none;
+            border-radius: 6px;
+            color: var(--rd-primary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .rd-run-btn:hover {
+            background: #D9AB4D;
+            transform: translateY(-1px);
+        }
+        .rd-run-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .rd-sandbox-result {
+            display: none;
+            background: var(--rd-surface-elevated);
+            border: 1px solid var(--rd-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px;
+        }
+        .rd-sandbox-result.active {
+            display: block;
+        }
+        .rd-result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .rd-result-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--rd-text-primary);
+        }
+        .rd-result-chart {
+            width: 100%;
+            height: 240px;
+            margin-bottom: 12px;
+        }
+        .rd-transmission-path {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+        }
+        .rd-transmission-step {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--rd-surface);
+            border: 1px solid var(--rd-border);
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--rd-text-secondary);
+        }
+        .rd-transmission-step .step-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: var(--rd-accent);
+            color: var(--rd-primary);
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .rd-transmission-arrow {
+            color: var(--rd-text-muted);
+            font-size: 14px;
+        }
+        .rd-impact-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .rd-impact-item {
+            text-align: center;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+        }
+        .rd-impact-label {
+            font-size: 11px;
+            color: var(--rd-text-muted);
+            margin-bottom: 4px;
+        }
+        .rd-impact-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--rd-text-primary);
+        }
+        .rd-impact-value.positive { color: var(--rd-success); }
+        .rd-impact-value.negative { color: var(--rd-danger); }
+        .rd-ai-report {
+            padding: 12px;
+            background: rgba(200,155,60,0.1);
+            border: 1px solid rgba(200,155,60,0.2);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--rd-text-secondary);
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        /* 市场快讯卡片 */
+        .rd-market-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding: 12px;
+        }
+        .rd-market-item {
+            background: var(--rd-surface);
+            border: 1px solid var(--rd-border);
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+        }
+        .rd-market-name {
+            font-size: 11px;
+            color: var(--rd-text-secondary);
+            margin-bottom: 4px;
+        }
+        .rd-market-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--rd-text-primary);
+        }
+        .rd-market-change {
+            font-size: 11px;
+            margin-top: 2px;
+        }
+        .rd-market-change.up { color: var(--rd-danger); }
+        .rd-market-change.down { color: var(--rd-success); }
+        /* 发行日历 */
+        .rd-calendar-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .rd-calendar-item {
+            background: var(--rd-surface);
+            border: 1px solid var(--rd-border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 12px;
+        }
+        .rd-calendar-bond {
+            font-weight: 600;
+            color: var(--rd-text-primary);
+            margin-bottom: 4px;
+        }
+        .rd-calendar-meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--rd-text-muted);
+            font-size: 11px;
+        }
+        .rd-calendar-status {
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+        .rd-calendar-status.pending { background: rgba(245,158,11,0.2); color: var(--rd-warning); }
+        .rd-calendar-status.completed { background: rgba(16,185,129,0.2); color: var(--rd-success); }
+        /* 空状态 */
+        .rd-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--rd-text-muted);
+        }
+        .rd-empty-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+        /* 加载状态 */
+        .rd-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: var(--rd-text-muted);
+        }
+        .rd-spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--rd-border);
+            border-top-color: var(--rd-accent);
+            border-radius: 50%;
+            animation: rdSpin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes rdSpin {
+            to { transform: rotate(360deg); }
+        }
+        /* 滚动条 */
+        .rd-card-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        .rd-card-body::-webkit-scrollbar-track {
+            background: var(--rd-surface);
+        }
+        .rd-card-body::-webkit-scrollbar-thumb {
+            background: var(--rd-border);
+            border-radius: 3px;
+        }
+        .rd-card-body::-webkit-scrollbar-thumb:hover {
+            background: var(--rd-text-muted);
+        }
+
     </style>
 </head>
 <body>
@@ -3164,6 +3775,11 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
             发行智能助手
         </button>
+        <button class="issue-assistant-nav-btn" onclick="enterRiskDashboard()" title="进入风险监测大屏">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+            风险监测大屏
+        </button>
+
         <button class="issue-assistant-nav-btn" onclick="enterRiskDashboard()" title="进入风险监测大屏">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
             风险监测大屏
@@ -3370,6 +3986,216 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
         </div>
+    <!-- 风险监测与沙盘推演大屏 -->
+    <div class="risk-dashboard-panel" id="riskDashboardPanel">
+        <div class="rd-header">
+            <div class="rd-brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                RISK DASHBOARD <span>实时风险监测与沙盘推演</span>
+            </div>
+            <div class="rd-header-actions">
+                <div class="rd-live-badge"><span class="rd-live-dot"></span>LIVE</div>
+                <button class="rd-close-btn" onclick="exitRiskDashboard()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    返回金融助手
+                </button>
+            </div>
+        </div>
+        <div class="rd-body">
+            <!-- 左栏：市场行情 -->
+            <div class="rd-col rd-col-left">
+                <div class="rd-card" style="flex:1;">
+                    <div class="rd-card-header">
+                        <div class="rd-card-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            中债市场快讯
+                        </div>
+                    </div>
+                    <div class="rd-card-body">
+                        <div class="rd-market-grid" id="rdMarketGrid">
+                            <div class="rd-market-item">
+                                <div class="rd-market-name">国债 10Y</div>
+                                <div class="rd-market-value" id="rdM1">2.3500%</div>
+                                <div class="rd-market-change up" id="rdC1">+1.2bp</div>
+                            </div>
+                            <div class="rd-market-item">
+                                <div class="rd-market-name">国开 10Y</div>
+                                <div class="rd-market-value" id="rdM2">2.4500%</div>
+                                <div class="rd-market-change down" id="rdC2">-0.8bp</div>
+                            </div>
+                            <div class="rd-market-item">
+                                <div class="rd-market-name">托管量</div>
+                                <div class="rd-market-value" id="rdM3">128.5万亿</div>
+                                <div class="rd-market-change up" id="rdC3">+0.3%</div>
+                            </div>
+                            <div class="rd-market-item">
+                                <div class="rd-market-name">投资者</div>
+                                <div class="rd-market-value" id="rdM4">42,186户</div>
+                                <div class="rd-market-change up" id="rdC4">+156</div>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px;">
+                            <div style="font-size:12px;color:var(--rd-text-secondary);margin-bottom:8px;">收益率曲线（国债 vs 国开）</div>
+                            <div class="rd-chart-container" id="rdYieldCurveChart" style="min-height:180px;"></div>
+                        </div>
+                        <div style="margin-top:12px;">
+                            <div style="font-size:12px;color:var(--rd-text-secondary);margin-bottom:8px;">30日走势（10Y 国债）</div>
+                            <div class="rd-chart-container" id="rdHistoryChart" style="min-height:140px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中栏：风险监测 + 沙盘推演 -->
+            <div class="rd-col rd-col-center">
+                <!-- 风险指标仪表盘 -->
+                <div class="rd-card" style="flex:0 0 auto;">
+                    <div class="rd-card-header">
+                        <div class="rd-card-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            实时风险监测
+                        </div>
+                        <button class="rd-alert-btn" onclick="refreshRiskIndicators()" style="font-size:11px;padding:4px 10px;">刷新</button>
+                    </div>
+                    <div class="rd-card-body" style="padding:0;">
+                        <div class="rd-indicator-grid" id="rdIndicatorGrid">
+                            <div class="rd-indicator-card level-green" id="rdInd1">
+                                <div class="rd-indicator-name">收益偏差</div>
+                                <div class="rd-indicator-value level-green">0.85<span class="rd-indicator-unit">%</span></div>
+                                <div class="rd-indicator-desc">发行利率与估值偏离度处于合理区间</div>
+                                <span class="rd-indicator-level level-green">正常</span>
+                            </div>
+                            <div class="rd-indicator-card level-green" id="rdInd2">
+                                <div class="rd-indicator-name">投标集中度</div>
+                                <div class="rd-indicator-value level-green">42.3<span class="rd-indicator-unit">%</span></div>
+                                <div class="rd-indicator-desc">前五大承销商占比适中，分布均匀</div>
+                                <span class="rd-indicator-level level-green">正常</span>
+                            </div>
+                            <div class="rd-indicator-card level-green" id="rdInd3">
+                                <div class="rd-indicator-name">异常报价</div>
+                                <div class="rd-indicator-value level-green">1.2<span class="rd-indicator-unit">%</span></div>
+                                <div class="rd-indicator-desc">报价分布正常，无显著异常</div>
+                                <span class="rd-indicator-level level-green">正常</span>
+                            </div>
+                            <div class="rd-indicator-card level-green" id="rdInd4">
+                                <div class="rd-indicator-name">流动性紧张</div>
+                                <div class="rd-indicator-value level-green">0.35</div>
+                                <div class="rd-indicator-desc">市场流动性充裕，交易活跃</div>
+                                <span class="rd-indicator-level level-green">正常</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 沙盘推演控制区 -->
+                <div class="rd-card" style="flex:1;display:flex;flex-direction:column;">
+                    <div class="rd-card-header">
+                        <div class="rd-card-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                            沙盘推演引擎
+                        </div>
+                    </div>
+                    <div class="rd-sandbox-controls">
+                        <div class="rd-scenario-group">
+                            <label class="rd-scenario-label">情景选择</label>
+                            <select class="rd-scenario-select" id="rdScenarioSelect" onchange="onScenarioChange()">
+                                <option value="">-- 选择情景 --</option>
+                                <option value="rate_parallel_up">利率平行上移 50bp</option>
+                                <option value="rate_parallel_down">利率平行下移 30bp</option>
+                                <option value="rate_steepening">收益率曲线陡峭化</option>
+                                <option value="rate_flattening">收益率曲线平坦化</option>
+                                <option value="credit_cheng_tou">城投信用事件冲击</option>
+                                <option value="credit_real_estate">地产信用风险蔓延</option>
+                                <option value="sentiment_pessimistic">市场情绪极度悲观</option>
+                                <option value="sentiment_optimistic">市场情绪乐观</option>
+                            </select>
+                        </div>
+                        <div class="rd-param-group" style="flex:1;min-width:200px;">
+                            <label class="rd-scenario-label">冲击幅度 <span id="rdParamLabel">50bp</span></label>
+                            <div class="rd-param-row">
+                                <span class="rd-param-label">10bp</span>
+                                <input type="range" class="rd-param-slider" id="rdParamSlider" min="10" max="100" value="50" oninput="onParamSliderChange()">
+                                <span class="rd-param-label">100bp</span>
+                                <span class="rd-param-value" id="rdParamValue">50bp</span>
+                            </div>
+                        </div>
+                        <div class="rd-scenario-group" style="justify-content:flex-end;">
+                            <button class="rd-run-btn" id="rdRunBtn" onclick="runSandbox()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                运行推演
+                            </button>
+                        </div>
+                    </div>
+                    <div class="rd-card-body" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;">
+                        <!-- 推演结果 -->
+                        <div class="rd-sandbox-result" id="rdSandboxResult">
+                            <div class="rd-result-header">
+                                <div class="rd-result-title" id="rdResultTitle">推演结果</div>
+                                <span class="rd-indicator-level level-green" id="rdResultSeverity">低风险</span>
+                            </div>
+                            <div class="rd-result-chart" id="rdSandboxChart"></div>
+                            <div class="rd-transmission-path" id="rdTransmissionPath"></div>
+                            <div class="rd-impact-summary" id="rdImpactSummary"></div>
+                            <div class="rd-ai-report" id="rdAiReport"></div>
+                        </div>
+
+                        <!-- 空状态 -->
+                        <div class="rd-empty" id="rdSandboxEmpty">
+                            <svg class="rd-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                            <div>选择情景并点击「运行推演」</div>
+                            <div style="font-size:11px;margin-top:4px;">支持利率冲击、信用事件、情绪波动等多种情景模拟</div>
+                        </div>
+
+                        <!-- 加载状态 -->
+                        <div class="rd-loading" id="rdSandboxLoading" style="display:none;">
+                            <div class="rd-spinner"></div>
+                            <span>正在运行沙盘推演，请稍候...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右栏：预警列表 + 发行日历 -->
+            <div class="rd-col rd-col-right">
+                <div class="rd-card" style="flex:1;">
+                    <div class="rd-card-header">
+                        <div class="rd-card-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                            风险预警
+                        </div>
+                        <button class="rd-alert-btn" onclick="refreshAlerts()" style="font-size:11px;padding:4px 10px;">刷新</button>
+                    </div>
+                    <div class="rd-card-body">
+                        <div class="rd-alert-list" id="rdAlertList">
+                            <div class="rd-empty">
+                                <svg class="rd-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                                <div>暂无预警</div>
+                                <div style="font-size:11px;margin-top:4px;">系统运行正常，风险指标均在阈值内</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="rd-card" style="flex:0 0 auto;max-height:280px;">
+                    <div class="rd-card-header">
+                        <div class="rd-card-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            今日发行日历
+                        </div>
+                    </div>
+                    <div class="rd-card-body">
+                        <div class="rd-calendar-list" id="rdCalendarList">
+                            <div class="rd-empty">
+                                <div>加载中...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
     <!-- 风险监测与沙盘推演大屏 -->
     <div class="risk-dashboard-panel" id="riskDashboardPanel">
         <div class="rd-header">
@@ -6713,6 +7539,517 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 btn.disabled = false;
             }
         }
+        // ==================== 风险监测与沙盘推演大屏 ====================
+        let rdCharts = {};
+        let rdRefreshInterval = null;
+        let rdSandboxChart = null;
+
+        function enterRiskDashboard() {
+            const panel = document.getElementById('riskDashboardPanel');
+            panel.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            initRiskDashboard();
+        }
+
+        function exitRiskDashboard() {
+            const panel = document.getElementById('riskDashboardPanel');
+            panel.classList.remove('active');
+            document.body.style.overflow = '';
+            if (rdRefreshInterval) {
+                clearInterval(rdRefreshInterval);
+                rdRefreshInterval = null;
+            }
+            Object.values(rdCharts).forEach(chart => {
+                if (chart && chart.dispose) chart.dispose();
+            });
+            rdCharts = {};
+            if (rdSandboxChart) {
+                rdSandboxChart.dispose();
+                rdSandboxChart = null;
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const panel = document.getElementById('riskDashboardPanel');
+                if (panel && panel.classList.contains('active')) {
+                    exitRiskDashboard();
+                }
+            }
+        });
+
+        async function initRiskDashboard() {
+            await Promise.all([
+                refreshMarketData(),
+                refreshRiskIndicators(),
+                refreshAlerts(),
+                refreshCalendar()
+            ]);
+            rdRefreshInterval = setInterval(async () => {
+                await Promise.all([
+                    refreshMarketData(),
+                    refreshRiskIndicators(),
+                    refreshAlerts(),
+                    refreshCalendar()
+                ]);
+            }, 30000);
+        }
+
+        async function refreshMarketData() {
+            try {
+                const res = await fetch('/api/risk-monitor/market', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('ccdc_auth_token') }
+                });
+                if (!res.ok) throw new Error('获取市场数据失败');
+                const data = await res.json();
+
+                document.getElementById('rdM1').textContent = data.treasury_curve['10Y'].toFixed(4) + '%';
+                document.getElementById('rdM2').textContent = data.policy_curve['10Y'].toFixed(4) + '%';
+                document.getElementById('rdM3').textContent = data.macro.custody.toFixed(1) + '万亿';
+                document.getElementById('rdM4').textContent = data.macro.investors.toLocaleString() + '户';
+
+                const change1 = (Math.random() - 0.5) * 4;
+                const change2 = (Math.random() - 0.5) * 4;
+                document.getElementById('rdC1').textContent = (change1 > 0 ? '+' : '') + change1.toFixed(1) + 'bp';
+                document.getElementById('rdC1').className = 'rd-market-change ' + (change1 > 0 ? 'up' : 'down');
+                document.getElementById('rdC2').textContent = (change2 > 0 ? '+' : '') + change2.toFixed(1) + 'bp';
+                document.getElementById('rdC2').className = 'rd-market-change ' + (change2 > 0 ? 'up' : 'down');
+
+                updateYieldCurveChart(data.treasury_curve, data.policy_curve);
+                updateHistoryChart(data.history);
+            } catch (err) {
+                console.error('[RiskDashboard] market data error:', err);
+            }
+        }
+
+        function updateYieldCurveChart(treasury, policy) {
+            const container = document.getElementById('rdYieldCurveChart');
+            if (!container) return;
+            if (!rdCharts.yieldCurve) {
+                rdCharts.yieldCurve = echarts.init(container, 'dark');
+            }
+            const terms = ['1Y', '3Y', '5Y', '7Y', '10Y', '30Y'];
+            const option = {
+                backgroundColor: 'transparent',
+                grid: { left: '10%', right: '5%', top: '15%', bottom: '15%' },
+                xAxis: {
+                    type: 'category',
+                    data: terms,
+                    axisLine: { lineStyle: { color: '#1E3A5F' } },
+                    axisLabel: { color: '#9DB2CE', fontSize: 10 }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '收益率(%)',
+                    nameTextStyle: { color: '#9DB2CE', fontSize: 10 },
+                    axisLine: { lineStyle: { color: '#1E3A5F' } },
+                    axisLabel: { color: '#9DB2CE', fontSize: 10, formatter: '{value}%' },
+                    splitLine: { lineStyle: { color: '#1E3A5F', type: 'dashed' } }
+                },
+                series: [
+                    {
+                        name: '国债',
+                        type: 'line',
+                        data: terms.map(t => treasury[t]),
+                        smooth: true,
+                        lineStyle: { color: '#C89B3C', width: 2 },
+                        itemStyle: { color: '#C89B3C' },
+                        areaStyle: { color: 'rgba(200,155,60,0.1)' }
+                    },
+                    {
+                        name: '国开债',
+                        type: 'line',
+                        data: terms.map(t => policy[t]),
+                        smooth: true,
+                        lineStyle: { color: '#3B82F6', width: 2 },
+                        itemStyle: { color: '#3B82F6' }
+                    }
+                ],
+                legend: {
+                    data: ['国债', '国开债'],
+                    textStyle: { color: '#9DB2CE', fontSize: 10 },
+                    top: 0
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(17,29,51,0.9)',
+                    borderColor: '#1E3A5F',
+                    textStyle: { color: '#E8F0FE', fontSize: 11 }
+                }
+            };
+            rdCharts.yieldCurve.setOption(option);
+        }
+
+        function updateHistoryChart(history) {
+            const container = document.getElementById('rdHistoryChart');
+            if (!container) return;
+            if (!rdCharts.history) {
+                rdCharts.history = echarts.init(container, 'dark');
+            }
+            const option = {
+                backgroundColor: 'transparent',
+                grid: { left: '10%', right: '5%', top: '10%', bottom: '15%' },
+                xAxis: {
+                    type: 'category',
+                    data: history.map(h => h.date.slice(5)),
+                    axisLine: { lineStyle: { color: '#1E3A5F' } },
+                    axisLabel: { color: '#9DB2CE', fontSize: 9, interval: 4 }
+                },
+                yAxis: {
+                    type: 'value',
+                    scale: true,
+                    axisLine: { lineStyle: { color: '#1E3A5F' } },
+                    axisLabel: { color: '#9DB2CE', fontSize: 9, formatter: '{value}%' },
+                    splitLine: { lineStyle: { color: '#1E3A5F', type: 'dashed' } }
+                },
+                series: [{
+                    type: 'line',
+                    data: history.map(h => h.value),
+                    smooth: true,
+                    lineStyle: { color: '#C89B3C', width: 2 },
+                    itemStyle: { color: '#C89B3C' },
+                    areaStyle: {
+                        color: {
+                            type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [
+                                { offset: 0, color: 'rgba(200,155,60,0.3)' },
+                                { offset: 1, color: 'rgba(200,155,60,0.02)' }
+                            ]
+                        }
+                    }
+                }],
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(17,29,51,0.9)',
+                    borderColor: '#1E3A5F',
+                    textStyle: { color: '#E8F0FE', fontSize: 11 }
+                }
+            };
+            rdCharts.history.setOption(option);
+        }
+
+        async function refreshRiskIndicators() {
+            try {
+                const res = await fetch('/api/risk-monitor/indicators', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('ccdc_auth_token') }
+                });
+                if (!res.ok) throw new Error('获取风险指标失败');
+                const data = await res.json();
+
+                data.indicators.forEach((ind, idx) => {
+                    const card = document.getElementById('rdInd' + (idx + 1));
+                    if (!card) return;
+                    card.className = 'rd-indicator-card level-' + ind.level;
+                    card.querySelector('.rd-indicator-name').textContent = ind.name;
+                    const valueEl = card.querySelector('.rd-indicator-value');
+                    valueEl.className = 'rd-indicator-value level-' + ind.level;
+                    if (ind.unit) {
+                        valueEl.innerHTML = ind.value + '<span class="rd-indicator-unit">' + ind.unit + '</span>';
+                    } else {
+                        valueEl.textContent = ind.value;
+                    }
+                    card.querySelector('.rd-indicator-desc').textContent = ind.description;
+                    const levelEl = card.querySelector('.rd-indicator-level');
+                    levelEl.className = 'rd-indicator-level level-' + ind.level;
+                    levelEl.textContent = ind.level === 'red' ? '高风险' : ind.level === 'orange' ? '中风险' : ind.level === 'yellow' ? '关注' : '正常';
+                });
+            } catch (err) {
+                console.error('[RiskDashboard] indicators error:', err);
+            }
+        }
+
+        async function refreshAlerts() {
+            try {
+                const res = await fetch('/api/risk-monitor/alerts?status=unread&limit=20', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('ccdc_auth_token') }
+                });
+                if (!res.ok) throw new Error('获取预警失败');
+                const data = await res.json();
+                const listEl = document.getElementById('rdAlertList');
+
+                if (!data.alerts || data.alerts.length === 0) {
+                    listEl.innerHTML = '<div class="rd-empty">' +
+                        '<svg class="rd-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>' +
+                        '<div>暂无预警</div>' +
+                        '<div style="font-size:11px;margin-top:4px;">系统运行正常，风险指标均在阈值内</div>' +
+                        '</div>';
+                    return;
+                }
+
+                listEl.innerHTML = data.alerts.map(alert => {
+                    const levelText = alert.level === 'red' ? '高风险' : alert.level === 'orange' ? '中风险' : '关注';
+                    return '<div class="rd-alert-item level-' + alert.level + '">' +
+                        '<div class="rd-alert-header">' +
+                        '<div class="rd-alert-title">' + alert.title + '</div>' +
+                        '<span class="rd-alert-level level-' + alert.level + '">' + levelText + '</span>' +
+                        '</div>' +
+                        '<div class="rd-alert-message">' + alert.message + '</div>' +
+                        '<div class="rd-alert-meta">' +
+                        '<span>' + new Date(alert.created_at).toLocaleString('zh-CN') + '</span>' +
+                        '<div class="rd-alert-actions">' +
+                        '<button class="rd-alert-btn" onclick="ackAlert(' + alert.id + ')">确认</button>' +
+                        '<button class="rd-alert-btn" onclick="ignoreAlert(' + alert.id + ')">忽略</button>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+                }).join('');
+            } catch (err) {
+                console.error('[RiskDashboard] alerts error:', err);
+            }
+        }
+
+        async function ackAlert(alertId) {
+            try {
+                await fetch('/api/risk-monitor/alerts/' + alertId + '/ack', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('ccdc_auth_token') }
+                });
+                await refreshAlerts();
+            } catch (err) {
+                console.error('[RiskDashboard] ack alert error:', err);
+            }
+        }
+
+        async function ignoreAlert(alertId) {
+            try {
+                await fetch('/api/risk-monitor/alerts/' + alertId + '/ignore', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('ccdc_auth_token') }
+                });
+                await refreshAlerts();
+            } catch (err) {
+                console.error('[RiskDashboard] ignore alert error:', err);
+            }
+        }
+
+        async function refreshCalendar() {
+            try {
+                const res = await fetch('/api/risk-monitor/market', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('ccdc_auth_token') }
+                });
+                if (!res.ok) throw new Error('获取发行日历失败');
+                const data = await res.json();
+                const listEl = document.getElementById('rdCalendarList');
+
+                if (!data.calendar || data.calendar.length === 0) {
+                    listEl.innerHTML = '<div class="rd-empty"><div>今日暂无发行计划</div></div>';
+                    return;
+                }
+
+                listEl.innerHTML = data.calendar.map(item => {
+                    const statusText = item.status === 'pending' ? '待发行' : '已完成';
+                    return '<div class="rd-calendar-item">' +
+                        '<div class="rd-calendar-bond">' + item.bond_name + '</div>' +
+                        '<div class="rd-calendar-meta">' +
+                        '<span>' + item.issuer + ' | ' + item.issue_scale + '亿 | ' + item.term + '</span>' +
+                        '<span class="rd-calendar-status ' + item.status + '">' + statusText + '</span>' +
+                        '</div>' +
+                        '</div>';
+                }).join('');
+            } catch (err) {
+                console.error('[RiskDashboard] calendar error:', err);
+            }
+        }
+
+        function onScenarioChange() {
+            const select = document.getElementById('rdScenarioSelect');
+            const value = select.value;
+            const label = document.getElementById('rdParamLabel');
+            const slider = document.getElementById('rdParamSlider');
+            const paramValue = document.getElementById('rdParamValue');
+
+            if (value.startsWith('rate_')) {
+                label.textContent = '冲击幅度';
+                slider.min = 10;
+                slider.max = 100;
+                slider.value = 50;
+                paramValue.textContent = '50bp';
+            } else if (value.startsWith('credit_')) {
+                label.textContent = '利差走阔';
+                slider.min = 20;
+                slider.max = 200;
+                slider.value = 80;
+                paramValue.textContent = '80bp';
+            } else if (value.startsWith('sentiment_')) {
+                label.textContent = '情绪强度';
+                slider.min = 10;
+                slider.max = 100;
+                slider.value = 70;
+                paramValue.textContent = '70%';
+            }
+        }
+
+        function onParamSliderChange() {
+            const slider = document.getElementById('rdParamSlider');
+            const paramValue = document.getElementById('rdParamValue');
+            const scenario = document.getElementById('rdScenarioSelect').value;
+            if (scenario.startsWith('sentiment_')) {
+                paramValue.textContent = slider.value + '%';
+            } else {
+                paramValue.textContent = slider.value + 'bp';
+            }
+        }
+
+        async function runSandbox() {
+            const scenarioValue = document.getElementById('rdScenarioSelect').value;
+            if (!scenarioValue) {
+                alert('请先选择情景');
+                return;
+            }
+
+            const paramValue = parseInt(document.getElementById('rdParamSlider').value);
+            const btn = document.getElementById('rdRunBtn');
+            const resultEl = document.getElementById('rdSandboxResult');
+            const emptyEl = document.getElementById('rdSandboxEmpty');
+            const loadingEl = document.getElementById('rdSandboxLoading');
+
+            const scenarioMap = {
+                'rate_parallel_up': { type: 'rate_shock', params: { shock_type: 'parallel', magnitude: paramValue, direction: 'up', duration_days: 30 } },
+                'rate_parallel_down': { type: 'rate_shock', params: { shock_type: 'parallel', magnitude: paramValue, direction: 'down', duration_days: 30 } },
+                'rate_steepening': { type: 'rate_shock', params: { shock_type: 'steepening', short_end: -10, long_end: paramValue, duration_days: 30 } },
+                'rate_flattening': { type: 'rate_shock', params: { shock_type: 'flattening', short_end: paramValue, long_end: -10, duration_days: 30 } },
+                'credit_cheng_tou': { type: 'credit_event', params: { sector: '城投', spread_widening: paramValue, contagion: 0.6, duration_days: 60 } },
+                'credit_real_estate': { type: 'credit_event', params: { sector: '房地产', spread_widening: paramValue, contagion: 0.8, duration_days: 90 } },
+                'sentiment_pessimistic': { type: 'sentiment', params: { sentiment_score: -paramValue / 100, risk_aversion: 0.9, flight_to_quality: true, duration_days: 20 } },
+                'sentiment_optimistic': { type: 'sentiment', params: { sentiment_score: paramValue / 100, risk_aversion: 0.2, flight_to_quality: false, duration_days: 20 } }
+            };
+
+            const scenario = scenarioMap[scenarioValue];
+            if (!scenario) {
+                alert('未知情景类型');
+                return;
+            }
+
+            const scenarioName = document.getElementById('rdScenarioSelect').options[document.getElementById('rdScenarioSelect').selectedIndex].text;
+
+            btn.disabled = true;
+            emptyEl.style.display = 'none';
+            resultEl.classList.remove('active');
+            loadingEl.style.display = 'flex';
+
+            try {
+                const res = await fetch('/api/sandbox/run', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('ccdc_auth_token')
+                    },
+                    body: JSON.stringify({
+                        scenario_type: scenario.type,
+                        params: scenario.params,
+                        scenario_name: scenarioName
+                    })
+                });
+
+                if (!res.ok) throw new Error('推演失败');
+                const data = await res.json();
+                displaySandboxResult(data);
+            } catch (err) {
+                console.error('[RiskDashboard] sandbox error:', err);
+                alert('推演失败: ' + err.message);
+                emptyEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                loadingEl.style.display = 'none';
+            }
+        }
+
+        function displaySandboxResult(data) {
+            const resultEl = document.getElementById('rdSandboxResult');
+            const titleEl = document.getElementById('rdResultTitle');
+            const severityEl = document.getElementById('rdResultSeverity');
+            const transmissionEl = document.getElementById('rdTransmissionPath');
+            const impactEl = document.getElementById('rdImpactSummary');
+            const reportEl = document.getElementById('rdAiReport');
+
+            titleEl.textContent = data.scenario_name;
+            severityEl.textContent = data.impact_summary.severity === 'high' ? '高风险' : data.impact_summary.severity === 'medium' ? '中风险' : '低风险';
+            severityEl.className = 'rd-indicator-level level-' + (data.impact_summary.severity === 'high' ? 'red' : data.impact_summary.severity === 'medium' ? 'orange' : 'green');
+
+            transmissionEl.innerHTML = data.risk_transmission.map((step, idx) => {
+                const arrow = idx < data.risk_transmission.length - 1 ? '<span class="rd-transmission-arrow">→</span>' : '';
+                return '<div class="rd-transmission-step"><span class="step-num">' + step.step + '</span><span>' + step.stage + '</span></div>' + arrow;
+            }).join('');
+
+            const changes = data.impact_summary.curve_changes;
+            impactEl.innerHTML =
+                '<div class="rd-impact-item"><div class="rd-impact-label">平均变动</div><div class="rd-impact-value ' + (data.impact_summary.avg_change_bp > 0 ? 'negative' : 'positive') + '">' + (data.impact_summary.avg_change_bp > 0 ? '+' : '') + data.impact_summary.avg_change_bp + 'bp</div></div>' +
+                '<div class="rd-impact-item"><div class="rd-impact-label">10Y 变动</div><div class="rd-impact-value ' + (changes['10Y'] > 0 ? 'negative' : 'positive') + '">' + (changes['10Y'] > 0 ? '+' : '') + changes['10Y'] + 'bp</div></div>' +
+                '<div class="rd-impact-item"><div class="rd-impact-label">发行利率变化</div><div class="rd-impact-value ' + (data.impact_summary.issue_rate_change_bp > 0 ? 'negative' : 'positive') + '">' + (data.impact_summary.issue_rate_change_bp > 0 ? '+' : '') + data.impact_summary.issue_rate_change_bp + 'bp</div></div>' +
+                '<div class="rd-impact-item"><div class="rd-impact-label">认购倍数变化</div><div class="rd-impact-value ' + (data.impact_summary.subscription_multiple_change > 0 ? 'positive' : 'negative') + '">' + (data.impact_summary.subscription_multiple_change > 0 ? '+' : '') + data.impact_summary.subscription_multiple_change + '</div></div>';
+
+            reportEl.textContent = data.ai_report;
+            updateSandboxChart(data.baseline_curve, data.shocked_curve);
+            resultEl.classList.add('active');
+        }
+
+        function updateSandboxChart(baseline, shocked) {
+            const container = document.getElementById('rdSandboxChart');
+            if (!container) return;
+            if (!rdSandboxChart) {
+                rdSandboxChart = echarts.init(container, 'dark');
+            }
+            const terms = ['1Y', '3Y', '5Y', '7Y', '10Y', '30Y'];
+            const option = {
+                backgroundColor: 'transparent',
+                grid: { left: '10%', right: '5%', top: '15%', bottom: '15%' },
+                xAxis: {
+                    type: 'category',
+                    data: terms,
+                    axisLine: { lineStyle: { color: '#1E3A5F' } },
+                    axisLabel: { color: '#9DB2CE', fontSize: 10 }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '收益率(%)',
+                    nameTextStyle: { color: '#9DB2CE', fontSize: 10 },
+                    axisLine: { lineStyle: { color: '#1E3A5F' } },
+                    axisLabel: { color: '#9DB2CE', fontSize: 10, formatter: '{value}%' },
+                    splitLine: { lineStyle: { color: '#1E3A5F', type: 'dashed' } }
+                },
+                series: [
+                    {
+                        name: '基准曲线',
+                        type: 'line',
+                        data: terms.map(t => baseline[t]),
+                        smooth: true,
+                        lineStyle: { color: '#3B82F6', width: 2 },
+                        itemStyle: { color: '#3B82F6' }
+                    },
+                    {
+                        name: '推演曲线',
+                        type: 'line',
+                        data: terms.map(t => shocked[t]),
+                        smooth: true,
+                        lineStyle: { color: '#EF4444', width: 2, type: 'dashed' },
+                        itemStyle: { color: '#EF4444' },
+                        areaStyle: { color: 'rgba(239,68,68,0.1)' }
+                    }
+                ],
+                legend: {
+                    data: ['基准曲线', '推演曲线'],
+                    textStyle: { color: '#9DB2CE', fontSize: 10 },
+                    top: 0
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(17,29,51,0.9)',
+                    borderColor: '#1E3A5F',
+                    textStyle: { color: '#E8F0FE', fontSize: 11 }
+                }
+            };
+            rdSandboxChart.setOption(option);
+        }
+
+        window.addEventListener('resize', function() {
+            Object.values(rdCharts).forEach(chart => {
+                if (chart && chart.resize) chart.resize();
+            });
+            if (rdSandboxChart) rdSandboxChart.resize();
+        });
+
+
+        
 
         function renderBidLadderResults(resp) {
             const box = document.getElementById('blResultBox');
