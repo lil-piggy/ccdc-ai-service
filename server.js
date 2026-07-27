@@ -308,6 +308,8 @@ const taskRoutes = require('./routes/tasks');
 const biddingResultRoutes = require('./routes/biddingResults');
 const p1AdvancedRoutes = require('./routes/p1Advanced');
 const p2AdvancedRoutes = require('./routes/p2Advanced');
+const riskMonitorRoutes = require('./routes/riskMonitor');
+const sandboxRoutes = require('./routes/sandbox');
 
 app.use('/api/announcement', authMiddleware, announcementRoutes);
 app.use('/api/finance', authMiddleware, financeCheckRoutes);
@@ -317,6 +319,8 @@ app.use('/api/tasks', authMiddleware, taskRoutes);
 app.use('/api/bidding-results', authMiddleware, biddingResultRoutes);
 app.use('/api/p1', authMiddleware, p1AdvancedRoutes);
 app.use('/api/p2', authMiddleware, p2AdvancedRoutes);
+app.use('/api/risk-monitor', authMiddleware, riskMonitorRoutes);
+app.use('/api/sandbox', authMiddleware, sandboxRoutes);
 
 // Chat SSE proxy
 app.post('/api/chat', authMiddleware, async (req, res) => {

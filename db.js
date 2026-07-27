@@ -336,6 +336,50 @@ async function initDb() {
       )
     `);
 
+    // ==================== P3: 风险监测与沙盘推演 ====================
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS risk_alerts (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        alert_type VARCHAR(50) NOT NULL,
+        level VARCHAR(10) NOT NULL,
+        title VARCHAR(200) NOT NULL,
+        message TEXT NOT NULL,
+        metric_value DECIMAL(10,4),
+        threshold DECIMAL(10,4),
+        status VARCHAR(20) DEFAULT 'unread',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS sandbox_scenarios (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        scenario_type VARCHAR(50) NOT NULL,
+        params JSONB NOT NULL,
+        description TEXT,
+        is_preset BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS sandbox_results (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        scenario_id INTEGER REFERENCES sandbox_scenarios(id),
+        scenario_name VARCHAR(100),
+        params JSONB NOT NULL,
+        baseline_curve JSONB,
+        shocked_curve JSONB,
+        risk_transmission JSONB,
+        impact_summary JSONB,
+        ai_report TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log('[DB] PostgreSQL tables initialized successfully.');
   } catch (err) {
     console.error('[DB] Init error:', err.message);
@@ -913,6 +957,122 @@ async function updateAiTask(taskId, userId, updates) {
   );
 }
 
+// ==================== P3: 风险监测 ====================
+async function createRiskAlert(data) {
+  const result = await pool.query(
+    `INSERT INTO risk_alerts (user_id, alert_type, level, title, message, metric_value, threshold, status)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+    [data.user_id, data.alert_type, data.level, data.title, data.message, data.metric_value, data.threshold, data.status || 'unread']
+  );
+  return result.rows[0];
+}
+
+async function getRiskAlerts(userId, status = null, limit = 50) {
+  let query = 'SELECT * FROM risk_alerts WHERE user_id = $1';
+  const params = [userId];
+  if (status) {
+    query += ' AND status = $2';
+    params.push(status);
+  }
+  query += ' ORDER BY created_at DESC LIMIT $' + (params.length + 1);
+  params.push(limit);
+  const result = await pool.query(query, params);
+  return result.rows;
+}
+
+async function updateRiskAlertStatus(alertId, userId, status) {
+  await pool.query(
+    'UPDATE risk_alerts SET status = $1 WHERE id = $2 AND user_id = $3',
+    [status, alertId, userId]
+  );
+}
+
+async function clearOldRiskAlerts(userId, keepCount = 100) {
+  await pool.query(
+    `DELETE FROM risk_alerts WHERE user_id = $1 AND id NOT IN (
+       SELECT id FROM risk_alerts WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2
+     )`,
+    [userId, keepCount]
+  );
+}
+
+// ==================== P3: 沙盘推演 ====================
+async function createSandboxScenario(data) {
+  const result = await pool.query(
+    `INSERT INTO sandbox_scenarios (name, scenario_type, params, description, is_preset)
+     VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+    [data.name, data.scenario_type, JSON.stringify(data.params), data.description, data.is_preset || false]
+  );
+  return result.rows[0];
+}
+
+async function getSandboxScenarios(isPreset = null) {
+  let query = 'SELECT * FROM sandbox_scenarios';
+  const params = [];
+  if (isPreset !== null) {
+    query += ' WHERE is_preset = $1';
+    params.push(isPreset);
+  }
+  query += ' ORDER BY id ASC';
+  const result = await pool.query(query, params);
+  return result.rows.map(r => ({ ...r, params: typeof r.params === 'string' ? JSON.parse(r.params) : r.params }));
+}
+
+async function getSandboxScenarioById(id) {
+  const result = await pool.query('SELECT * FROM sandbox_scenarios WHERE id = $1', [id]);
+  if (!result.rows[0]) return null;
+  const r = result.rows[0];
+  return { ...r, params: typeof r.params === 'string' ? JSON.parse(r.params) : r.params };
+}
+
+async function createSandboxResult(data) {
+  const result = await pool.query(
+    `INSERT INTO sandbox_results (user_id, scenario_id, scenario_name, params, baseline_curve, shocked_curve, risk_transmission, impact_summary, ai_report)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+    [
+      data.user_id,
+      data.scenario_id,
+      data.scenario_name,
+      JSON.stringify(data.params),
+      JSON.stringify(data.baseline_curve),
+      JSON.stringify(data.shocked_curve),
+      JSON.stringify(data.risk_transmission),
+      JSON.stringify(data.impact_summary),
+      data.ai_report
+    ]
+  );
+  return result.rows[0];
+}
+
+async function getSandboxResults(userId, limit = 20) {
+  const result = await pool.query(
+    'SELECT * FROM sandbox_results WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2',
+    [userId, limit]
+  );
+  return result.rows.map(r => ({
+    ...r,
+    params: typeof r.params === 'string' ? JSON.parse(r.params) : r.params,
+    baseline_curve: typeof r.baseline_curve === 'string' ? JSON.parse(r.baseline_curve) : r.baseline_curve,
+    shocked_curve: typeof r.shocked_curve === 'string' ? JSON.parse(r.shocked_curve) : r.shocked_curve,
+    risk_transmission: typeof r.risk_transmission === 'string' ? JSON.parse(r.risk_transmission) : r.risk_transmission,
+    impact_summary: typeof r.impact_summary === 'string' ? JSON.parse(r.impact_summary) : r.impact_summary
+  }));
+}
+
+async function getSandboxResultById(id, userId) {
+  const result = await pool.query('SELECT * FROM sandbox_results WHERE id = $1 AND user_id = $2', [id, userId]);
+  if (!result.rows[0]) return null;
+  const r = result.rows[0];
+  return {
+    ...r,
+    params: typeof r.params === 'string' ? JSON.parse(r.params) : r.params,
+    baseline_curve: typeof r.baseline_curve === 'string' ? JSON.parse(r.baseline_curve) : r.baseline_curve,
+    shocked_curve: typeof r.shocked_curve === 'string' ? JSON.parse(r.shocked_curve) : r.shocked_curve,
+    risk_transmission: typeof r.risk_transmission === 'string' ? JSON.parse(r.risk_transmission) : r.risk_transmission,
+    impact_summary: typeof r.impact_summary === 'string' ? JSON.parse(r.impact_summary) : r.impact_summary
+  };
+}
+
 module.exports = {
   pool,
   initDb,
@@ -977,5 +1137,16 @@ module.exports = {
   createUploadedFile,
   createAiTask,
   getAiTask,
-  updateAiTask
+  updateAiTask,
+  // P3 风险监测与沙盘推演
+  createRiskAlert,
+  getRiskAlerts,
+  updateRiskAlertStatus,
+  clearOldRiskAlerts,
+  createSandboxScenario,
+  getSandboxScenarios,
+  getSandboxScenarioById,
+  createSandboxResult,
+  getSandboxResults,
+  getSandboxResultById
 };
