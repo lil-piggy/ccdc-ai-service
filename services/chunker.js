@@ -33,6 +33,8 @@ function splitText(text, chunkSize = DEFAULT_CHUNK_SIZE, overlap = DEFAULT_OVERL
     }
     const chunk = text.slice(start, end).trim();
     if (chunk.length >= MIN_CHUNK_LEN) chunks.push(chunk);
+    // 已到文本末尾，必须退出，否则 start 回退会导致死循环
+    if (end >= text.length) break;
     start = end - overlap;
     if (start >= end) start = end;
   }
