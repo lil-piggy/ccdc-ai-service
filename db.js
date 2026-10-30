@@ -575,9 +575,9 @@ async function createKbChunks(chunks) {
   let idx = 1;
   for (const c of chunks) {
     params.push(`($${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, to_tsvector('simple', $${idx++}))`);
-    // pgvector 接收数组；JSONB 列接收字符串化数组
+    // pgvector 需要方括号文本格式 '[1,2,3]'；JSONB 列接收字符串化数组
     const embeddingVal = pgvectorEnabled
-      ? (c.embedding || null)
+      ? (c.embedding ? `[${c.embedding.join(',')}]` : null)
       : (c.embedding ? JSON.stringify(c.embedding) : null);
     values.push(c.docId, c.userId, c.content, embeddingVal, JSON.stringify(c.meta || {}), c.content);
   }
