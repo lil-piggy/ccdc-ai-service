@@ -369,7 +369,8 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${ADMIN_API_KEY}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...(process.env.APP_SERIAL_NUMBER ? { 'app_serial_number': process.env.APP_SERIAL_NUMBER } : {})
       },
       body: JSON.stringify({
         model: model || ADMIN_API_MODEL,

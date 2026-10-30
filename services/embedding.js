@@ -18,7 +18,13 @@ const EMBEDDING_DIMENSION = parseInt(process.env.EMBEDDING_DIMENSION || '1536', 
 const EMBEDDING_BATCH_SIZE = parseInt(process.env.EMBEDDING_BATCH_SIZE || '50', 10);
 
 const client = EMBEDDING_API_URL && EMBEDDING_API_KEY
-  ? new OpenAI({ apiKey: EMBEDDING_API_KEY, baseURL: EMBEDDING_API_URL })
+  ? new OpenAI({
+      apiKey: EMBEDDING_API_KEY,
+      baseURL: EMBEDDING_API_URL,
+      ...(process.env.APP_SERIAL_NUMBER
+        ? { defaultHeaders: { 'app_serial_number': process.env.APP_SERIAL_NUMBER } }
+        : {})
+    })
   : null;
 
 function isEnabled() {

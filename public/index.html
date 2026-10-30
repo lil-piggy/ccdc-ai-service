@@ -6,14 +6,14 @@
     <meta name="referrer" content="no-referrer">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <title>CCDC 智能金融助手 · 中债发行AI大脑</title>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- 字体：内网环境降级为系统字体栈（原 Google Fonts 需外网） -->
+    <script src="/vendor/echarts.min.js"></script>
     <!-- 知识库文件解析库 -->
-    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="/vendor/mammoth.browser.min.js"></script>
+    <script src="/vendor/pdf.min.js"></script>
+    <script src="/vendor/tesseract.min.js"></script>
     <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdf.worker.min.js';
     </script>
     <style>
         :root {
@@ -5920,8 +5920,15 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
             }
             return text;
         }
+        // Tesseract OCR 资源配置（内网本地化路径，线上同样有效）
+        const TESSERACT_OPTS = {
+            workerPath: '/vendor/tesseract/worker.min.js',
+            corePath: '/vendor/tesseract/tesseract-core-simd.wasm.js',
+            langPath: '/vendor/tessdata'
+        };
         async function parseImageOcr(file) {
             const { data: { text } } = await Tesseract.recognize(file, 'chi_sim+eng', {
+                ...TESSERACT_OPTS,
                 logger: m => { /* console.log(m); */ }
             });
             return text;
@@ -7344,6 +7351,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     const imageDataUrl = canvas.toDataURL('image/png');
 
                     const result = await Tesseract.recognize(imageDataUrl, lang, {
+                        ...TESSERACT_OPTS,
                         logger: m => {
                             if (m.status === 'recognizing text') {
                                 box.innerHTML = `<div class="issue-loading">第 ${i}/${totalPages} 页识别中 ${(m.progress * 100).toFixed(0)}%</div>`;
