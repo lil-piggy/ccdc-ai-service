@@ -556,7 +556,21 @@ async function updateKbDocStatus(id, userId, status, updates = {}) {
 }
 
 async function deleteKbDocV2(id, userId) {
-  await pool.query('DELETE FROM kb_docs WHERE id = $1 AND user_id = $2', [id, userId]);
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    // 级联删除关联数据，避免删除后仍能被检索到
+    await client.query('DELETE FROM kb_chunks WHERE doc_id = $1 AND user_id = $2', [id, userId]);
+    await client.query('DELETE FROM kb_sheets WHERE doc_id = $1 AND user_id = $2', [id, userId]);
+    await client.query('DELETE FROM kb_files WHERE doc_id = $1 AND user_id = $2', [id, userId]);
+    await client.query('DELETE FROM kb_docs WHERE id = $1 AND user_id = $2', [id, userId]);
+    await client.query('COMMIT');
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
 }
 
 async function createKbFile(docId, userId, filePath, fileSize, mimeType) {

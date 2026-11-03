@@ -4672,7 +4672,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
-                    body: JSON.stringify({ model: model.name, messages: apiMessages, temperature: 1, stream: true, mode: 'bondcodin', userMessage: query })
+                    body: JSON.stringify({ model: model.name, messages: apiMessages, temperature: 1, stream: true, mode: 'bondcodin', userMessage: query, kbEnabled })
                 });
 
                 if (!response.ok) {
@@ -5162,7 +5162,7 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
-                    body: JSON.stringify({ model: model.name, messages: apiMessages, temperature: 1, stream: true, mode, userMessage: text })
+                    body: JSON.stringify({ model: model.name, messages: apiMessages, temperature: 1, stream: true, mode, userMessage: text, kbEnabled })
                 });
 
                 if (!response.ok) {

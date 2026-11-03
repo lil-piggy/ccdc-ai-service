@@ -10,7 +10,7 @@ const IMAGE_MIME_REGEX = /^image\/(png|jpe?g|gif|webp|bmp|tiff?)$/;
 const MAX_SHEET_ROWS = 1000;
 const MAX_SHEET_PREVIEW_ROWS = 50;
 const MAX_PDF_OCR_PAGES = 20;
-const MAX_FILE_SIZE_MB = 10;
+const MAX_FILE_SIZE_MB = 30;
 
 /**
  * 用 Tesseract.js 识别图片 Buffer 中的文字

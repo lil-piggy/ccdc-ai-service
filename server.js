@@ -98,7 +98,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // KB 上传配置（Render 免费版内存有限，限制 10MB）
 const kbUpload = multer({
   dest: path.join(__dirname, 'uploads', 'kb_tmp'),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 30 * 1024 * 1024 }, // 30MB（内网沙箱内存充足）
 });
 
 // JWT middleware
@@ -330,10 +330,10 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
     return res.status(503).json({ error: '管理员未配置 API' });
   }
 
-  // Knowledge base retrieval (Hybrid Search)
+  // Knowledge base retrieval (Hybrid Search) — 仅当前端开启知识库开关时执行
   let kbContext = '';
   try {
-    if (userMessage) {
+    if (userMessage && req.body.kbEnabled === true) {
       const topK = parseInt(process.env.KB_TOP_K || '5', 10);
       let results = [];
       if (embeddingEnabled()) {
