@@ -5859,6 +5859,10 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
             const files = await loadKbFromServer();
             renderKbList(files);
         }
+        // 大文件分片上传（>30MB 走分片，<=30MB 走单文件）
+        const CHUNK_SIZE = 5 * 1024 * 1024; // 每片 5MB
+        const SINGLE_UPLOAD_LIMIT = 30 * 1024 * 1024; // 30MB
+
         async function handleKbUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -5868,6 +5872,15 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                 alert('暂不支持该格式，支持: txt, md, csv, json, docx, doc, pdf, png, jpg, gif, webp, bmp, tiff, xlsx, xls, pptx');
                 return;
             }
+            if (file.size > SINGLE_UPLOAD_LIMIT) {
+                await uploadLargeFileInChunks(file);
+            } else {
+                await uploadSingleFile(file);
+            }
+            e.target.value = ''; // 清空选择，允许重复上传同名文件
+        }
+
+        async function uploadSingleFile(file) {
             const formData = new FormData();
             formData.append('file', file);
             try {
@@ -5882,9 +5895,66 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
                     throw new Error(data.error || '上传失败');
                 }
                 await refreshKbList();
-                // 轮询状态直到处理完成
                 pollKbStatus();
             } catch (err) { alert('上传失败: ' + err.message); }
+        }
+
+        async function uploadLargeFileInChunks(file) {
+            const uploadId = 'u' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+            const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+            const token = localStorage.getItem('ccdc_auth_token');
+            try {
+                for (let i = 0; i < totalChunks; i++) {
+                    const start = i * CHUNK_SIZE;
+                    const end = Math.min(start + CHUNK_SIZE, file.size);
+                    const blob = file.slice(start, end);
+                    const formData = new FormData();
+                    formData.append('chunk', blob, `chunk_${i}`);
+                    formData.append('uploadId', uploadId);
+                    formData.append('chunkIndex', i);
+                    formData.append('totalChunks', totalChunks);
+
+                    const res = await fetch('/api/kb/upload-chunk', {
+                        method: 'POST',
+                        headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+                        body: formData
+                    });
+                    if (!res.ok) {
+                        const data = await res.json().catch(() => ({}));
+                        throw new Error(`分片 ${i+1}/${totalChunks} 上传失败: ${data.error || res.status}`);
+                    }
+                    // 更新进度提示
+                    const box = document.getElementById('kbList');
+                    if (box) {
+                        const pct = Math.round(((i + 1) / totalChunks) * 100);
+                        box.innerHTML = `<div class="kb-item"><span class="kb-item-name">大文件分片上传中：${pct}%（${i+1}/${totalChunks}）</span></div>`;
+                    }
+                }
+
+                // 全部上传完成，触发合并
+                const mergeRes = await fetch('/api/kb/merge-chunks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+                    },
+                    body: JSON.stringify({
+                        uploadId,
+                        filename: file.name,
+                        totalChunks,
+                        mimeType: file.type || 'application/octet-stream'
+                    })
+                });
+                if (!mergeRes.ok) {
+                    const data = await mergeRes.json().catch(() => ({}));
+                    throw new Error(data.error || '分片合并失败');
+                }
+                await refreshKbList();
+                pollKbStatus();
+            } catch (err) {
+                alert('大文件上传失败: ' + err.message);
+                await refreshKbList();
+            }
         }
         async function pollKbStatus() {
             for (let i = 0; i < 30; i++) {

@@ -271,6 +271,78 @@ app.post('/api/kb/upload', authMiddleware, kbUpload.single('file'), async (req, 
   }
 });
 
+// ==================== 大文件分片上传 ====================
+const chunkUpload = multer({
+  dest: path.join(__dirname, 'uploads', 'kb_chunks_tmp'),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 单片最大 10MB
+});
+
+// 接收单个分片
+app.post('/api/kb/upload-chunk', authMiddleware, chunkUpload.single('chunk'), async (req, res) => {
+  try {
+    const { uploadId, chunkIndex, totalChunks } = req.body;
+    if (!uploadId || chunkIndex === undefined || !req.file) {
+      return res.status(400).json({ error: '缺少 uploadId/chunkIndex/分片文件' });
+    }
+    const dir = path.join(__dirname, 'uploads', 'chunks', uploadId);
+    fs.mkdirSync(dir, { recursive: true });
+    const target = path.join(dir, `chunk_${String(chunkIndex).padStart(5, '0')}`);
+    fs.renameSync(req.file.path, target);
+    res.json({ ok: true, chunkIndex: Number(chunkIndex), totalChunks: Number(totalChunks) });
+  } catch (err) {
+    console.error('[KB Chunk Upload]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 合并分片并触发解析
+app.post('/api/kb/merge-chunks', authMiddleware, async (req, res) => {
+  try {
+    const { uploadId, filename, totalChunks, mimeType } = req.body;
+    if (!uploadId || !filename || !totalChunks) {
+      return res.status(400).json({ error: '缺少 uploadId/filename/totalChunks' });
+    }
+    const dir = path.join(__dirname, 'uploads', 'chunks', uploadId);
+    const safeName = filename.replace(/[^\w\u4e00-\u9fa5.\-]/g, '_');
+    const destPath = path.join(__dirname, 'uploads', `${Date.now()}_${safeName}`);
+
+    // 按序号合并
+    const writer = fs.createWriteStream(destPath);
+    for (let i = 0; i < totalChunks; i++) {
+      const part = path.join(dir, `chunk_${String(i).padStart(5, '0')}`);
+      if (!fs.existsSync(part)) {
+        writer.destroy();
+        return res.status(400).json({ error: `分片 ${i} 缺失，请重新上传` });
+      }
+      const data = fs.readFileSync(part);
+      writer.write(data);
+    }
+    writer.end();
+    await new Promise(resolve => writer.on('finish', resolve));
+
+    // 清理分片
+    fs.rmSync(dir, { recursive: true, force: true });
+
+    const stat = fs.statSync(destPath);
+    const doc = await db.createKbDocV2(req.userId, filename, mimeType || 'application/octet-stream', stat.size, '', 'processing');
+
+    // 后台异步解析
+    ingestKbDocument({ path: destPath, originalname: filename, mimetype: mimeType || 'application/octet-stream', size: stat.size }, req.userId, {
+      docId: doc.id,
+      chunkSize: parseInt(process.env.KB_CHUNK_SIZE || '500', 10),
+      overlap: parseInt(process.env.KB_CHUNK_OVERLAP || '100', 10),
+    }).catch(err => {
+      console.error('[KB Merge Background Error]', err.message);
+      db.updateKbDocStatus(doc.id, req.userId, 'error', { errorMessage: err.message }).catch(() => {});
+    });
+
+    res.status(202).json({ id: doc.id, status: 'processing' });
+  } catch (err) {
+    console.error('[KB Merge Chunks]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 兼容旧版：前端传已提取文本
 app.post('/api/kb', authMiddleware, async (req, res) => {
   const { filename, content } = req.body;

@@ -110,6 +110,10 @@ async function initDb() {
     `);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_kb_chunks_doc_id ON kb_chunks(doc_id)`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_kb_chunks_keywords ON kb_chunks USING GIN(keywords)`);
+    // 向量相似度索引（pgvector 启用时才建，支撑 1G+ 文档量级的高效检索）
+    if (pgvectorEnabled) {
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_kb_chunks_embedding ON kb_chunks USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)`);
+    }
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS kb_sheets (
