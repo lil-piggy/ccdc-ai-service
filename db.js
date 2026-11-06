@@ -523,6 +523,44 @@ async function getKbDocsByUserV2(userId) {
   return result.rows;
 }
 
+// 知识库文档搜索（分页 + 时间范围 + 名称模糊搜索）
+async function searchKbDocs(userId, options = {}) {
+  const { keyword = '', startDate = null, endDate = null, page = 1, pageSize = 20 } = options;
+  const offset = (page - 1) * pageSize;
+  const conditions = ['user_id = $1'];
+  const values = [userId];
+  let idx = 2;
+
+  if (keyword && keyword.trim()) {
+    conditions.push(`filename ILIKE $${idx++}`);
+    values.push(`%${keyword.trim()}%`);
+  }
+  if (startDate) {
+    conditions.push(`created_at >= $${idx++}`);
+    values.push(startDate);
+  }
+  if (endDate) {
+    conditions.push(`created_at <= $${idx++}::date + interval '1 day'`);
+    values.push(endDate);
+  }
+
+  const where = conditions.join(' AND ');
+  const countResult = await pool.query(`SELECT COUNT(*) FROM kb_docs WHERE ${where}`, values);
+  const total = parseInt(countResult.rows[0].count, 10);
+
+  values.push(pageSize, offset);
+  const result = await pool.query(
+    `SELECT id, user_id, filename, mime_type, file_size, status, error_message,
+            total_chars, chunk_count, created_at, updated_at
+     FROM kb_docs WHERE ${where}
+     ORDER BY created_at DESC
+     LIMIT $${idx++} OFFSET $${idx++}`,
+    values
+  );
+
+  return { total, page, pageSize, totalPages: Math.ceil(total / pageSize), rows: result.rows };
+}
+
 async function getKbDocById(id, userId) {
   const result = await pool.query(
     `SELECT * FROM kb_docs WHERE id = $1 AND user_id = $2`,
@@ -1111,6 +1149,7 @@ module.exports = {
   // KB V2
   createKbDocV2,
   getKbDocsByUserV2,
+  searchKbDocs,
   getKbDocById,
   updateKbDocStatus,
   deleteKbDocV2,

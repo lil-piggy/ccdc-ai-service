@@ -1,7 +1,13 @@
 node_modules/
 .env
+.env.bak
 data.sqlite
 *.log
 uploads/
 .workbuddy/
+*.tar.gz
+*.tar.xz
+*.zip
+*.zip.*
+离线部署内容准备合集/
 

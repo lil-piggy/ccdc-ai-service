@@ -3115,6 +3115,388 @@
         .rd-card-body::-webkit-scrollbar-thumb:hover {
             background: var(--rd-text-muted);
         }
+
+        /* ==================== 知识库管理弹窗 ==================== */
+        .kb-manager-panel {
+            --kbm-primary: #0A2540;
+            --kbm-accent: #C89B3C;
+            --kbm-bg: #F4F6F8;
+            --kbm-surface: #FFFFFF;
+            --kbm-border: #DEE2E7;
+            --kbm-text: #0F172A;
+            --kbm-text-sub: #5A677A;
+            --kbm-success: #0D7A5F;
+            --kbm-warning: #B76E00;
+            --kbm-danger: #C53030;
+
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1002;
+            flex-direction: column;
+            background: var(--kbm-bg);
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--kbm-text);
+        }
+        .kb-manager-panel.active {
+            display: flex;
+            animation: kbmFadeIn 0.25s ease;
+        }
+        @keyframes kbmFadeIn {
+            from { opacity: 0; transform: scale(0.995); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .kbm-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            height: 60px;
+            background: var(--kbm-primary);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            flex-shrink: 0;
+        }
+        .kbm-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #FFFFFF;
+        }
+        .kbm-brand svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--kbm-accent);
+        }
+        .kbm-brand span {
+            font-size: 12px;
+            font-weight: 400;
+            color: rgba(255,255,255,0.6);
+            margin-left: 4px;
+        }
+        .kbm-close-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            color: #FFFFFF;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .kbm-close-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .kbm-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 16px;
+            padding: 16px 24px;
+        }
+        .kbm-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 0;
+        }
+        .kbm-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--kbm-surface);
+            border: 1px solid var(--kbm-border);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .kbm-search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid var(--kbm-border);
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+        }
+        .kbm-search-input:focus {
+            border-color: var(--kbm-accent);
+        }
+        .kbm-date-input {
+            padding: 8px 12px;
+            border: 1px solid var(--kbm-border);
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+        }
+        .kbm-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--kbm-border);
+            border-radius: 6px;
+            background: var(--kbm-surface);
+            color: var(--kbm-text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .kbm-btn:hover {
+            background: #F0F2F5;
+        }
+        .kbm-btn-primary {
+            background: var(--kbm-primary);
+            color: #FFFFFF;
+            border-color: var(--kbm-primary);
+        }
+        .kbm-btn-primary:hover {
+            background: #143A5E;
+        }
+        .kbm-table-wrap {
+            flex: 1;
+            background: var(--kbm-surface);
+            border: 1px solid var(--kbm-border);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .kbm-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .kbm-table thead {
+            background: #F8FAFB;
+            border-bottom: 2px solid var(--kbm-border);
+        }
+        .kbm-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--kbm-text-sub);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .kbm-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #F0F2F5;
+            vertical-align: middle;
+        }
+        .kbm-table tbody tr:hover {
+            background: #F8FAFB;
+        }
+        .kbm-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .kbm-filename {
+            font-weight: 500;
+            color: var(--kbm-text);
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .kbm-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .kbm-status.ready { background: rgba(13,122,95,0.1); color: var(--kbm-success); }
+        .kbm-status.processing { background: rgba(183,110,0,0.1); color: var(--kbm-warning); }
+        .kbm-status.error { background: rgba(197,48,48,0.1); color: var(--kbm-danger); }
+        .kbm-action-btn {
+            padding: 4px 10px;
+            border: 1px solid var(--kbm-border);
+            border-radius: 4px;
+            background: transparent;
+            color: var(--kbm-text-sub);
+            font-size: 11px;
+            cursor: pointer;
+            margin-right: 6px;
+        }
+        .kbm-action-btn:hover {
+            background: #F0F2F5;
+            color: var(--kbm-text);
+        }
+        .kbm-action-btn.danger:hover {
+            background: rgba(197,48,48,0.1);
+            color: var(--kbm-danger);
+            border-color: var(--kbm-danger);
+        }
+        .kbm-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-top: 1px solid var(--kbm-border);
+            background: #F8FAFB;
+            font-size: 13px;
+            color: var(--kbm-text-sub);
+        }
+        .kbm-page-btns {
+            display: flex;
+            gap: 6px;
+        }
+        .kbm-page-btn {
+            padding: 4px 10px;
+            border: 1px solid var(--kbm-border);
+            border-radius: 4px;
+            background: var(--kbm-surface);
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .kbm-page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .kbm-page-btn.active {
+            background: var(--kbm-primary);
+            color: #FFFFFF;
+            border-color: var(--kbm-primary);
+        }
+        .kbm-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--kbm-text-sub);
+        }
+        .kbm-empty-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+        /* 溯源详情弹窗 */
+        .kbm-detail-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1003;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        .kbm-detail-modal.active {
+            display: flex;
+        }
+        .kbm-detail-content {
+            background: var(--kbm-surface);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 900px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .kbm-detail-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--kbm-border);
+            background: var(--kbm-primary);
+            color: #FFFFFF;
+        }
+        .kbm-detail-title {
+            font-size: 16px;
+            font-weight: 600;
+            max-width: 70%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .kbm-detail-close {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #FFFFFF;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .kbm-detail-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        .kbm-detail-section {
+            margin-bottom: 24px;
+        }
+        .kbm-detail-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--kbm-primary);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--kbm-border);
+        }
+        .kbm-info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .kbm-info-item {
+            padding: 12px;
+            background: #F8FAFB;
+            border-radius: 6px;
+        }
+        .kbm-info-label {
+            font-size: 11px;
+            color: var(--kbm-text-sub);
+            margin-bottom: 4px;
+        }
+        .kbm-info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--kbm-text);
+        }
+        .kbm-chunk-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .kbm-chunk-item {
+            padding: 12px;
+            background: #F8FAFB;
+            border: 1px solid var(--kbm-border);
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .kbm-chunk-meta {
+            font-size: 11px;
+            color: var(--kbm-text-sub);
+            margin-bottom: 6px;
+        }
+        .kbm-chunk-text {
+            color: var(--kbm-text);
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        .kbm-file-info {
+            padding: 12px;
+            background: #F8FAFB;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--kbm-text-sub);
+        }
+        .kbm-loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--kbm-text-sub);
+        }
     </style>
 </head>
 <body>
@@ -3180,6 +3562,7 @@
             <div class="foldable-content">
                 <div class="kb-list" id="kbList"></div>
                 <button class="config-btn" onclick="document.getElementById('kbInput').click()">+ 添加文档</button>
+                <button class="config-btn" onclick="openKbManager()" title="全量管理知识库文档">📚 知识库管理</button>
                 <button class="bond-codin-nav-btn" onclick="enterBondCodinMode()" title="进入代码审计与架构分析模式"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Bond Codin · 编程大师</button>
                 <input type="file" id="kbInput" style="display:none" accept=".txt,.md,.csv,.json,.docx,.doc,.pdf,.png,.jpg,.jpeg,.gif,.webp,.bmp,.tiff,.xlsx,.xls,.pptx" onchange="handleKbUpload(event)">
                 <label class="kb-toggle"><input type="checkbox" id="kbToggle" onchange="toggleKb()"> 启用知识库检索</label>
@@ -6757,6 +7140,193 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
             }
         }
 
+        // ==================== 知识库管理 ====================
+        let kbmState = { page: 1, pageSize: 20, keyword: '', startDate: '', endDate: '', total: 0, totalPages: 0 };
+
+        function openKbManager() {
+            document.getElementById('kbManagerPanel').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            searchKbDocs();
+        }
+
+        function closeKbManager() {
+            document.getElementById('kbManagerPanel').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const panel = document.getElementById('kbManagerPanel');
+                if (panel && panel.classList.contains('active')) closeKbManager();
+                const modal = document.getElementById('kbmDetailModal');
+                if (modal && modal.classList.contains('active')) closeKbDetail();
+            }
+        });
+
+        async function searchKbDocs() {
+            kbmState.keyword = document.getElementById('kbmSearchInput').value.trim();
+            kbmState.startDate = document.getElementById('kbmStartDate').value;
+            kbmState.endDate = document.getElementById('kbmEndDate').value;
+
+            const params = new URLSearchParams({
+                keyword: kbmState.keyword,
+                startDate: kbmState.startDate,
+                endDate: kbmState.endDate,
+                page: kbmState.page,
+                pageSize: kbmState.pageSize
+            });
+            const token = localStorage.getItem('ccdc_auth_token');
+            try {
+                const res = await fetch('/api/kb/search?' + params, {
+                    headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+                });
+                if (!res.ok) throw new Error('搜索失败');
+                const data = await res.json();
+                kbmState.total = data.total;
+                kbmState.totalPages = data.totalPages;
+                renderKbTable(data.rows);
+                renderKbPagination();
+            } catch (err) {
+                console.error('[KB Manager]', err);
+                document.getElementById('kbmTableBody').innerHTML = '<tr><td colspan="6" class="kbm-empty">搜索失败: ' + err.message + '</td></tr>';
+            }
+        }
+
+        function resetKbSearch() {
+            document.getElementById('kbmSearchInput').value = '';
+            document.getElementById('kbmStartDate').value = '';
+            document.getElementById('kbmEndDate').value = '';
+            kbmState.page = 1;
+            searchKbDocs();
+        }
+
+        function renderKbTable(rows) {
+            const tbody = document.getElementById('kbmTableBody');
+            if (!rows || rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="kbm-empty"><svg class="kbm-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><div>暂无文档</div></td></tr>';
+                return;
+            }
+            tbody.innerHTML = rows.map(doc => {
+                const statusText = doc.status === 'ready' ? '已完成' : doc.status === 'processing' ? '处理中' : '失败';
+                const sizeText = doc.file_size ? (doc.file_size / 1024 / 1024).toFixed(2) + ' MB' : '-';
+                const timeText = doc.created_at ? new Date(doc.created_at).toLocaleString('zh-CN') : '-';
+                const chunkText = doc.chunk_count || 0;
+                return '<tr>' +
+                    '<td><div class="kbm-filename" title="' + escapeHtml(doc.filename) + '">' + escapeHtml(doc.filename) + '</div></td>' +
+                    '<td>' + sizeText + '</td>' +
+                    '<td><span class="kbm-status ' + doc.status + '">' + statusText + '</span></td>' +
+                    '<td>' + chunkText + '</td>' +
+                    '<td>' + timeText + '</td>' +
+                    '<td>' +
+                    '<button class="kbm-action-btn" onclick="viewKbDetail(' + doc.id + ')">溯源</button>' +
+                    '<button class="kbm-action-btn danger" onclick="deleteKbDoc(' + doc.id + ')">删除</button>' +
+                    '</td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        function renderKbPagination() {
+            const wrap = document.getElementById('kbmPagination');
+            const info = document.getElementById('kbmTotalInfo');
+            const btns = document.getElementById('kbmPageBtns');
+            if (kbmState.total === 0) { wrap.style.display = 'none'; return; }
+            wrap.style.display = 'flex';
+            info.textContent = '共 ' + kbmState.total + ' 条，第 ' + kbmState.page + '/' + kbmState.totalPages + ' 页';
+
+            let html = '';
+            html += '<button class="kbm-page-btn" ' + (kbmState.page <= 1 ? 'disabled' : '') + ' onclick="kbmGoPage(' + (kbmState.page - 1) + ')">上一页</button>';
+            const start = Math.max(1, kbmState.page - 2);
+            const end = Math.min(kbmState.totalPages, kbmState.page + 2);
+            for (let i = start; i <= end; i++) {
+                html += '<button class="kbm-page-btn ' + (i === kbmState.page ? 'active' : '') + '" onclick="kbmGoPage(' + i + ')">' + i + '</button>';
+            }
+            html += '<button class="kbm-page-btn" ' + (kbmState.page >= kbmState.totalPages ? 'disabled' : '') + ' onclick="kbmGoPage(' + (kbmState.page + 1) + ')">下一页</button>';
+            btns.innerHTML = html;
+        }
+
+        function kbmGoPage(page) {
+            if (page < 1 || page > kbmState.totalPages) return;
+            kbmState.page = page;
+            searchKbDocs();
+        }
+
+        async function viewKbDetail(docId) {
+            const modal = document.getElementById('kbmDetailModal');
+            const body = document.getElementById('kbmDetailBody');
+            modal.classList.add('active');
+            body.innerHTML = '<div class="kbm-loading">加载中...</div>';
+            document.getElementById('kbmDetailTitle').textContent = '文档溯源';
+
+            const token = localStorage.getItem('ccdc_auth_token');
+            try {
+                const res = await fetch('/api/kb/' + docId, {
+                    headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+                });
+                if (!res.ok) throw new Error('获取详情失败');
+                const data = await res.json();
+                const doc = data.doc;
+                const chunks = data.chunks || [];
+
+                document.getElementById('kbmDetailTitle').textContent = doc.filename;
+
+                let html = '';
+
+                // 文档信息
+                html += '<div class="kbm-detail-section"><div class="kbm-detail-section-title">📄 文档信息</div><div class="kbm-info-grid">';
+                html += '<div class="kbm-info-item"><div class="kbm-info-label">文件大小</div><div class="kbm-info-value">' + (doc.file_size ? (doc.file_size / 1024 / 1024).toFixed(2) + ' MB' : '-') + '</div></div>';
+                html += '<div class="kbm-info-item"><div class="kbm-info-label">MIME 类型</div><div class="kbm-info-value" style="font-size:12px;">' + escapeHtml(doc.mime_type || '-') + '</div></div>';
+                html += '<div class="kbm-info-item"><div class="kbm-info-label">状态</div><div class="kbm-info-value"><span class="kbm-status ' + doc.status + '">' + (doc.status === 'ready' ? '已完成' : doc.status === 'processing' ? '处理中' : '失败') + '</span></div></div>';
+                html += '<div class="kbm-info-item"><div class="kbm-info-label">总字符数</div><div class="kbm-info-value">' + (doc.total_chars || 0).toLocaleString() + '</div></div>';
+                html += '<div class="kbm-info-item"><div class="kbm-info-label">分段数量</div><div class="kbm-info-value">' + (doc.chunk_count || 0) + '</div></div>';
+                html += '<div class="kbm-info-item"><div class="kbm-info-label">上传时间</div><div class="kbm-info-value" style="font-size:12px;">' + (doc.created_at ? new Date(doc.created_at).toLocaleString('zh-CN') : '-') + '</div></div>';
+                html += '</div></div>';
+
+                // 错误信息（如有）
+                if (doc.error_message) {
+                    html += '<div class="kbm-detail-section"><div class="kbm-detail-section-title">⚠️ 错误信息</div><div class="kbm-file-info" style="color:var(--kbm-danger);">' + escapeHtml(doc.error_message) + '</div></div>';
+                }
+
+                // 分段内容（溯源）
+                html += '<div class="kbm-detail-section"><div class="kbm-detail-section-title">🔍 分段内容（前 ' + chunks.length + ' 段，共 ' + (doc.chunk_count || 0) + ' 段）</div>';
+                if (chunks.length === 0) {
+                    html += '<div class="kbm-empty" style="padding:20px;">暂无分段内容</div>';
+                } else {
+                    html += '<div class="kbm-chunk-list">';
+                    chunks.forEach((c, idx) => {
+                        const chunkIdx = c.meta && c.meta.chunk_index !== undefined ? c.meta.chunk_index : idx;
+                        html += '<div class="kbm-chunk-item"><div class="kbm-chunk-meta">片段 #' + chunkIdx + ' · ' + (c.content ? c.content.length : 0) + ' 字符</div><div class="kbm-chunk-text">' + escapeHtml(c.content || '') + '</div></div>';
+                    });
+                    html += '</div>';
+                }
+                html += '</div>';
+
+                body.innerHTML = html;
+            } catch (err) {
+                console.error('[KB Detail]', err);
+                body.innerHTML = '<div class="kbm-empty" style="color:var(--kbm-danger);">加载失败: ' + err.message + '</div>';
+            }
+        }
+
+        function closeKbDetail() {
+            document.getElementById('kbmDetailModal').classList.remove('active');
+        }
+
+        async function deleteKbDoc(docId) {
+            if (!confirm('确定删除该文档及其所有分段？此操作不可恢复。')) return;
+            const token = localStorage.getItem('ccdc_auth_token');
+            try {
+                const res = await fetch('/api/kb/' + docId, {
+                    method: 'DELETE',
+                    headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+                });
+                if (!res.ok) throw new Error('删除失败');
+                await searchKbDocs();
+                await refreshKbList();
+            } catch (err) {
+                alert('删除失败: ' + err.message);
+            }
+        }
+
         // ==================== 风险监测与沙盘推演大屏 ====================
         let rdCharts = {};
         let rdRefreshInterval = null;
@@ -7880,5 +8450,72 @@ Bond Codin 将基于 中债金科企业级战略规划 三层架构规范进行�
             color: var(--text-main);
         }
     </style>
+
+    <!-- 知识库管理弹窗 -->
+    <div class="kb-manager-panel" id="kbManagerPanel">
+        <div class="kbm-header">
+            <div class="kbm-brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                知识库管理 <span>全量文档 · 搜索 · 溯源</span>
+            </div>
+            <button class="kbm-close-btn" onclick="closeKbManager()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                关闭
+            </button>
+        </div>
+        <div class="kbm-body">
+            <div class="kbm-main">
+                <!-- 工具栏 -->
+                <div class="kbm-toolbar">
+                    <input type="text" class="kbm-search-input" id="kbmSearchInput" placeholder="按文档名称模糊搜索..." onkeydown="if(event.key==='Enter')searchKbDocs()">
+                    <input type="date" class="kbm-date-input" id="kbmStartDate" title="开始日期">
+                    <span style="color:var(--kbm-text-sub);">至</span>
+                    <input type="date" class="kbm-date-input" id="kbmEndDate" title="结束日期">
+                    <button class="kbm-btn kbm-btn-primary" onclick="searchKbDocs()">搜索</button>
+                    <button class="kbm-btn" onclick="resetKbSearch()">重置</button>
+                    <button class="kbm-btn" onclick="document.getElementById('kbInput').click()">+ 上传文档</button>
+                </div>
+
+                <!-- 文档列表 -->
+                <div class="kbm-table-wrap">
+                    <div style="overflow-y:auto;flex:1;">
+                        <table class="kbm-table">
+                            <thead>
+                                <tr>
+                                    <th>文档名称</th>
+                                    <th>大小</th>
+                                    <th>状态</th>
+                                    <th>片段数</th>
+                                    <th>上传时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kbmTableBody">
+                                <tr><td colspan="6" class="kbm-loading">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- 分页 -->
+                    <div class="kbm-pagination" id="kbmPagination" style="display:none;">
+                        <span id="kbmTotalInfo">共 0 条</span>
+                        <div class="kbm-page-btns" id="kbmPageBtns"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 溯源详情弹窗 -->
+    <div class="kbm-detail-modal" id="kbmDetailModal">
+        <div class="kbm-detail-content">
+            <div class="kbm-detail-header">
+                <div class="kbm-detail-title" id="kbmDetailTitle">文档详情</div>
+                <button class="kbm-detail-close" onclick="closeKbDetail()">关闭</button>
+            </div>
+            <div class="kbm-detail-body" id="kbmDetailBody">
+                <div class="kbm-loading">加载中...</div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

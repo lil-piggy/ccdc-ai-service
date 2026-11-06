@@ -358,6 +358,24 @@ app.get('/api/kb', authMiddleware, async (req, res) => {
   res.json(docs);
 });
 
+// KB search（分页 + 时间范围 + 模糊搜索）
+app.get('/api/kb/search', authMiddleware, async (req, res) => {
+  try {
+    const { keyword = '', startDate = null, endDate = null, page = 1, pageSize = 20 } = req.query;
+    const result = await db.searchKbDocs(req.userId, {
+      keyword,
+      startDate: startDate || null,
+      endDate: endDate || null,
+      page: parseInt(page, 10),
+      pageSize: parseInt(pageSize, 10)
+    });
+    res.json(result);
+  } catch (err) {
+    console.error('[KB Search]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // KB 文档详情
 app.get('/api/kb/:id', authMiddleware, async (req, res) => {
   const doc = await db.getKbDocById(req.params.id, req.userId);
